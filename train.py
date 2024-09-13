@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 model_checkpoint = "distilbert-base-uncased"
 batch_size = 16
 
-label_all_tokens = True
+label_all_tokens = False
 label_map = {'O': 0, 'B-PROD': 1, 'I-PROD': 2} # bert expects labels to be in the form of integers
 reverse_label_map = {v: k for k, v in label_map.items()} # we will use this to convert the model's output back to the original labels ffor metrics
 
@@ -35,8 +35,25 @@ def read_conll_file(file_path):
 
                 if len(parts) == 4:  # We expect 4 columns: token, column 2, column 3, label
                     token, _, _, ner_label = parts
+                    if ner_label == "B-I-PROD":
+                        ner_label = "I-PROD"
+                    if ner_label == "B-B-PROD":
+                        ner_label = "B-PROD"
+                    if ner_label == "I-B-PROD":
+                        ner_label = "I-PROD"
+                    if ner_label == "I-I-PROD":
+                        ner_label = "I-PROD"
+
                 elif len(parts) == 3:  # If there's a missing column, handle it
                     token, _, ner_label = parts
+                    if ner_label == "B-I-PROD":
+                        ner_label = "I-PROD"
+                    if ner_label == "B-B-PROD":
+                        ner_label = "B-PROD"
+                    if ner_label == "I-B-PROD":
+                        ner_label = "I-PROD"
+                    if ner_label == "I-I-PROD":
+                        ner_label = "I-PROD"
                 else:
                     # Handle unexpected lines
                     print(f"Skipping line: {line.strip()}")
@@ -58,7 +75,7 @@ def read_conll_file(file_path):
     return sentences, labels
 
 
-train_sentences, train_labels = read_conll_file("data/test_conll.conll")
+train_sentences, train_labels = read_conll_file("data/training_data_v1.conll")
 
 
 # Load the tokenizer and the model
@@ -119,7 +136,7 @@ args = TrainingArguments(
     learning_rate=2e-5,
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
-    num_train_epochs=3,
+    num_train_epochs=10,
     weight_decay=0.01,
 )
 
