@@ -11,7 +11,7 @@ model_checkpoint = "distilbert-base-uncased"
 batch_size = 16
 
 label_all_tokens = False
-label_map = {'O': 0, 'B-PROD': 1, 'I-PROD': 2} # bert expects labels to be in the form of integers
+label_map = {'O': 0, 'B-PRODUCT': 1, 'I-PRODUCT': 2} # bert expects labels to be in the form of integers
 reverse_label_map = {v: k for k, v in label_map.items()} # we will use this to convert the model's output back to the original labels ffor metrics
 
 def read_conll_file(file_path):
@@ -75,14 +75,80 @@ def read_conll_file(file_path):
     return sentences, labels
 
 
-train_sentences, train_labels = read_conll_file("data/training_data_v1.conll")
+import csv
+import ast
 
+def parse_list_from_string(list_string):
+    try:
+        # Safely evaluate the string to convert it into a Python list
+        return ast.literal_eval(list_string)
+    except (ValueError, SyntaxError):
+        print(f"Error parsing: {list_string}")
+        return []
+
+def read_csv_file(file_path):
+    train_sentences = []
+    train_labels = []
+    # csv with link, base-link, tokens, label
+    with open(file_path, 'r', encoding='utf-8') as file:
+        csv_reader = csv.reader(file, delimiter=',')
+        for row in csv_reader:
+            # Skip the header
+            if row[0] == "URL":
+                continue
+
+            # Extract the tokens and labels from the row
+            tokens = parse_list_from_string(row[2])
+            labels = parse_list_from_string(row[3])
+
+            # Add the tokens and labels to the lists
+            train_sentences.append(tokens)
+            train_labels.append(labels)
+
+    for i in range(len(train_labels)):
+        for j in range(len(train_labels[i])):
+            train_labels[i][j] = label_map[train_labels[i][j]]
+
+    return train_sentences, train_labels
+
+
+# train_sentences, train_labels = read_conll_file("data/training_data_v1.conll")
+train_sentences, train_labels = read_csv_file("data/tokenized_data1.csv")
+
+print(train_sentences[:5], train_labels[:5])
 
 # Load the tokenizer and the model
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint)
 assert isinstance(tokenizer, transformers.PreTrainedTokenizerFast)
 
 # this method aligns the labels after tokenization (some words may have been split into multiple tokens + the 2 special tokens)
+# def tokenize_and_align_labels(train_sentences, train_labels): # this WORKSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+#     tokenized_inputs = tokenizer(train_sentences, truncation=True, is_split_into_words=True)
+#
+#     labels = []
+#     for i, label in enumerate(train_labels):
+#         word_ids = tokenized_inputs.word_ids(batch_index=i)
+#         previous_word_idx = None
+#         label_ids = []
+#         for word_idx in word_ids:
+#             # Special tokens have a word id that is None. We set the label to -100 so they are automatically
+#             # ignored in the loss function.
+#             if word_idx is None:
+#                 label_ids.append(-100)
+#             # We set the label for the first token of each word.
+#             elif word_idx != previous_word_idx:
+#                 label_ids.append(label[word_idx])
+#             # For the other tokens in a word, we set the label to either the current label or -100, depending on
+#             # the label_all_tokens flag.
+#             else:
+#                 label_ids.append(label[word_idx] if label_all_tokens else -100)
+#             previous_word_idx = word_idx
+#
+#         labels.append(label_ids)
+#
+#     tokenized_inputs["labels"] = labels
+#     return tokenized_inputs
+
 def tokenize_and_align_labels(train_sentences, train_labels):
     tokenized_inputs = tokenizer(train_sentences, truncation=True, is_split_into_words=True)
 
@@ -96,9 +162,13 @@ def tokenize_and_align_labels(train_sentences, train_labels):
             # ignored in the loss function.
             if word_idx is None:
                 label_ids.append(-100)
-            # We set the label for the first token of each word.
+            # If this is the first token of a word, use the corresponding label
             elif word_idx != previous_word_idx:
-                label_ids.append(label[word_idx])
+                if word_idx < len(label):  # Check if the word index is within label range
+                    label_ids.append(label[word_idx])
+                else:
+                    # If the word index is out of range, append -100 (ignore token)
+                    label_ids.append(-100)
             # For the other tokens in a word, we set the label to either the current label or -100, depending on
             # the label_all_tokens flag.
             else:
@@ -111,6 +181,9 @@ def tokenize_and_align_labels(train_sentences, train_labels):
     return tokenized_inputs
 
 
+
+
+
 # split the train_sentences and train_labels before tokenization
 train_sentences_split, test_sentences_split, train_labels_split, test_labels_split = train_test_split(
     train_sentences, train_labels, test_size=0.2
@@ -119,6 +192,9 @@ train_sentences_split, test_sentences_split, train_labels_split, test_labels_spl
 # tokenize and align labels for both training and test datasets
 train_data = tokenize_and_align_labels(train_sentences_split, train_labels_split)
 test_data = tokenize_and_align_labels(test_sentences_split, test_labels_split)
+
+
+print(train_data["input_ids"][0], train_data["labels"][0])
 
 # convert the tokenized data to Hugging Face Dataset format
 train_dataset = Dataset.from_dict(train_data)
@@ -136,7 +212,7 @@ args = TrainingArguments(
     learning_rate=2e-5,
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
-    num_train_epochs=10,
+    num_train_epochs=3,
     weight_decay=0.01,
 )
 
@@ -166,6 +242,7 @@ def compute_metrics(p):
         "accuracy": results["overall_accuracy"],
     }
 
+print(len(train_dataset), len(test_dataset))
 
 trainer = Trainer(
     model,
