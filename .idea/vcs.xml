@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/ML-backend/label-studio-ml-backend" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Test/mern-stack-example" vcs="Git" />
   </component>
 </project>
