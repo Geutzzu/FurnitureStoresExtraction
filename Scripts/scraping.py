@@ -175,15 +175,28 @@ def get_links(website_link, wanted_words=None):
     return dict_links
 
 
-def get_subpage_links(l, is_sitemap=False, custom_sitemap_tags=None, wanted_words=None, max_depth=3, current_depth=0,
-                      write_frequency=20, csv_filename="app_feature_test.csv"):
-    processed_links_count = 0
+def write_links_to_csv(links_dict, csv_filename):
+    """Writes the current state of the links dictionary to a CSV file."""
+    with open(csv_filename, "w", newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        for link in links_dict.keys():
+            csvwriter.writerow([link])
+
+    print(f"Links saved to {csv_filename}.")
+
+
+import threading
+import queue
+
+
+def get_subpage_links(l, link_queue ,is_sitemap=False, custom_sitemap_tags=None, wanted_words=None, max_depth=3, current_depth=0,
+                      write_frequency=20):
+    # processed_links_count = 0
 
     if current_depth >= max_depth:
         return l
 
-    with ThreadPoolExecutor(max_workers=32) as executor:
-
+    with ThreadPoolExecutor(max_workers=16) as executor:
         if is_sitemap:
             futures = {executor.submit(get_links_from_sitemap, link, custom_sitemap_tags, wanted_words): link for link
                        in l if l[link] == "Not-checked"}
@@ -202,31 +215,21 @@ def get_subpage_links(l, is_sitemap=False, custom_sitemap_tags=None, wanted_word
             l[link] = "Checked"
             l.update(dict_links_subpages)
 
-            processed_links_count += 1
+            # processed_links_count += 1
 
-            # Write to file every 'write_frequency' processed links
-            if processed_links_count >= write_frequency:  # this actually writes all the links to the csv file - even the not checked ones but in my case it is sufficient
-                write_links_to_csv(l, csv_filename)
-                processed_links_count = 0  # Reset the counter
+            for sub_link in dict_links_subpages:
+                if dict_links_subpages[sub_link] == "Not-checked":
+                    link_queue.put(sub_link)  # Put new link into the queue
+                    print(f"Added {sub_link} to the queue.")
 
     # Recursively call the function for the next depth level
-    return get_subpage_links(l, is_sitemap, custom_sitemap_tags, wanted_words, max_depth, current_depth + 1,
-                             write_frequency, csv_filename)
+    return get_subpage_links(l, link_queue, is_sitemap, custom_sitemap_tags, wanted_words, max_depth, current_depth + 1,
+                             write_frequency)
 
-
-def write_links_to_csv(links_dict, csv_filename):
-    """Writes the current state of the links dictionary to a CSV file."""
-    with open(csv_filename, "w", newline='') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        for link in links_dict.keys():
-            csvwriter.writerow([link])
-
-    print(f"Links saved to {csv_filename}.")
 
 
 # create dictionary of websites
-def scrape_website_links(url, is_sitemap=False, custom_sitemap_tags=None, wanted_words=None,
-                         output_file="app_feature_test.csv"): # Method to run from other scripts
+def scrape_website_links(url, link_queue, is_sitemap=False, custom_sitemap_tags=None, wanted_words=None): # Method to run from other scripts
     # Initialize the dictionary with the starting URL
     dict_links = {url: "Not-checked"}
 
@@ -235,7 +238,7 @@ def scrape_website_links(url, is_sitemap=False, custom_sitemap_tags=None, wanted
     while counter != 0:
         counter2 += 1
         # Call the function to get subpage links
-        dict_links2 = get_subpage_links(dict_links, is_sitemap=is_sitemap, custom_sitemap_tags=custom_sitemap_tags,
+        dict_links2 = get_subpage_links(dict_links, link_queue, is_sitemap=is_sitemap, custom_sitemap_tags=custom_sitemap_tags,
                                         wanted_words=wanted_words)
 
         # Update the counter to see how many links are left unchecked
@@ -250,7 +253,6 @@ def scrape_website_links(url, is_sitemap=False, custom_sitemap_tags=None, wanted
         dict_links = dict_links2
 
     # Write the collected links to the specified CSV file
-    write_links_to_csv(dict_links, output_file)
+    # write_links_to_csv(dict_links, output_file)
 
     print(f"Scraping completed. Total links scraped: {len(dict_links)}")
-    print(f"Links saved to {output_file}")
