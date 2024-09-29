@@ -25,8 +25,10 @@ SECRET_KEY = 'django-insecure-c-sc@+is+-^#3(pu78&783xu2gyl9vshib$d&8u6ycsvii-qj*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+]
 
 # Application definition
 
@@ -37,8 +39,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'FurnitureFinder'
+    'MlBackend.FurnitureFinder',
+    'channels',
 ]
+
+ASGI_APPLICATION = 'MlBackend.routing.application'
+
+# Example for in-memory channel layer
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -50,7 +62,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'Server.urls'
+ROOT_URLCONF = 'MlBackend.urls'
 
 TEMPLATES = [
     {
@@ -68,7 +80,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Server.wsgi.application'
+WSGI_APPLICATION = 'MlBackend.wsgi.application'
 
 
 # Database
@@ -122,3 +134,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOW_ALL_ORIGINS = True

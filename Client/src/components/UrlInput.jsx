@@ -2,41 +2,21 @@ import React, { useState } from "react";
 
 const UrlInput = ({ onSubmit }) => {
   const [url, setUrl] = useState("");
-  const [customTags, setCustomTags] = useState("");
-  const [customWords, setCustomWords] = useState("");
+  const [customSitemapTags, setCustomSitemapTags] = useState("");
+  const [wantedWords, setWantedWords] = useState("");
   const [searchSubpages, setSearchSubpages] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
 
     const formData = {
       url,
-      customTags: searchSubpages ? customTags : "",
-      customWords: searchSubpages ? customWords : "",
+      customSitemapTags: searchSubpages ? customSitemapTags : "",
+      wantedWords: searchSubpages ? wantedWords : "",
       searchSubpages,
     };
 
-    try {
-      const response = await axios.post(
-        import.meta.env.VITE_ML_BACKEND_URL + "/scrape",
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      console.log("Response from backend:", response.data);
-      onSubmit && onSubmit(response.data);
-    } catch (error) {
-      setError(error.message);
-      console.error("Error:", error);
-    } finally {
-      setLoading(false);
-    }
+    onSubmit(formData);
   };
 
   return (
@@ -82,15 +62,15 @@ const UrlInput = ({ onSubmit }) => {
             {/* Custom Words in URLs - Shown conditionally */}
             {searchSubpages && (
               <div className="mb-6">
-                <label className="block text-gray-700 text-lg mb-2" htmlFor="customWordsInput">
+                <label className="block text-gray-700 text-lg mb-2" htmlFor="wantedWordsInput">
                   Custom Paths in URLs:
                 </label>
                 <input
                   type="text"
-                  id="customWordsInput"
+                  id="wantedWordsInput"
                   placeholder="Enter custom paths separated by commas (e.g., /products/, /furniture/)"
-                  value={customWords}
-                  onChange={(e) => setCustomWords(e.target.value)}
+                  value={wantedWords}
+                  onChange={(e) => setWantedWords(e.target.value)}
                   className="appearance-none border border-gray-300 w-full text-gray-700 py-3 px-4 leading-tight focus:outline-none focus:border-blue-500 rounded-lg"
                 />
               </div>
@@ -99,15 +79,15 @@ const UrlInput = ({ onSubmit }) => {
             {/* Custom Web Tags Input - Shown conditionally */}
             {searchSubpages && (
               <div className="mb-6">
-                <label className="block text-gray-700 text-lg mb-2" htmlFor="customTagsInput">
+                <label className="block text-gray-700 text-lg mb-2" htmlFor="customSitemapTagsInput">
                   Custom XML Tags:
                 </label>
                 <input
                   type="text"
-                  id="customTagsInput"
+                  id="customSitemapTagsInput"
                   placeholder="Enter custom tags separated by commas ( 'loc' is used by default) - Fill only for scraping sitemaps!"
-                  value={customTags}
-                  onChange={(e) => setCustomTags(e.target.value)}
+                  value={customSitemapTags}
+                  onChange={(e) => setCustomSitemapTags(e.target.value)}
                   className="appearance-none border border-gray-300 w-full text-gray-700 py-3 px-4 leading-tight focus:outline-none focus:border-blue-500 rounded-lg"
                 />
               </div>

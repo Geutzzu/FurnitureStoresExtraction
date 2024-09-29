@@ -8,6 +8,7 @@ import App from "./App";
 import "./index.css";
 import UrlInput from "./components/UrlInput.jsx";
 import ProductTable from "./components/ProductTable.jsx";
+import ProductApp from "./components/ProductApp.jsx";
 
 const router = createBrowserRouter([
   {
@@ -18,8 +19,7 @@ const router = createBrowserRouter([
         path: "/",
         element: (
             <>
-              <UrlInput />
-              <ProductTable />
+                <ProductApp />
             </>
         )
       },

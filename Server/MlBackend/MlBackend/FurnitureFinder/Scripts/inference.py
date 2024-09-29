@@ -1,11 +1,9 @@
 import csv
-from locale import currency
 
-from Scripts.scraping import get_data
+from MlBackend.FurnitureFinder.Scripts.scraping import get_data
 
 csv.field_size_limit(5000000)
 import ast
-import operator
 import re
 
 import requests
@@ -13,19 +11,15 @@ from tqdm import tqdm
 from bs4 import BeautifulSoup
 
 from concurrent.futures import ThreadPoolExecutor
-import concurrent
+from concurrent.futures import as_completed
 
 import random
 import time
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-import os
 
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 import torch
 
-# %%
-model_name = model_checkpoint = "../Notebooks/distilbert-base-uncased-for-product-extraction/full_text_strictly_labeled_86000_0.87"
+model_name = model_checkpoint = "MlBackend/FurnitureFinder/Models/full_text_strictly_labeled_86000_0.87"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForTokenClassification.from_pretrained(model_name)
 label_list = ['O', 'B-PRODUCT', 'I-PRODUCT']
@@ -37,9 +31,6 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:79.0) Gecko/20100101 Firefox/79.0",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.1 Safari/605.1.15",
 ]
-
-
-# %%
 
 # Function to get page content
 def get_data(url):
@@ -83,21 +74,20 @@ def clean_text(s):
     return re.sub(allowed_pattern, '', s)
 
 
-# %%
-
 
 def has_letters(input_string):
     return any(char.isalpha() for char in input_string)
 
 
-def soup_mapper(soup):
+def soup_mapper(soup, max_tokens=128):
     word_tag_tuples = []
-    # Iterate through all tags
+    token_count = 0
     for tag in soup.descendants:
-        # Look only for deepest tags that dont contain other tags
+        if token_count >= max_tokens:
+            break
         if tag.name and not tag.find_all():
-            # Extract the word and tag
             for word in tag.text.split():
+                token_count += 1
                 word_tag_tuples.append((word, tag))
 
     if len(word_tag_tuples) == 0:
@@ -108,7 +98,7 @@ def soup_mapper(soup):
 def link_content(link):
     html_data = get_data(link)
     if html_data is None:
-        return None
+        return None, None, None, None
 
     soup = BeautifulSoup(html_data, "html.parser")
 
@@ -123,7 +113,7 @@ def link_content(link):
     for script in soup(["script", "style", "footer", "nav", "header", "noscript", "head"]):
         script.extract()
 
-    word_tag_tuples = soup_mapper(soup)  # by joining word_tag_tuples[0] you get the full text
+    word_tag_tuples = soup_mapper(soup, max_tokens=128)  # by joining word_tag_tuples[0] you get the full text
 
     url_index = link.rfind('/')
     url_last_path = link[url_index + 1:].replace('-', ' ').replace('_', ' ')
@@ -134,7 +124,6 @@ def link_content(link):
     return word_tag_tuples, title, url_last_path, soup
 
 
-# %%
 def formated_link_content(word_tag_tuples, title, url_last_path):
     cleaned_word_tag_tuples = []
 
@@ -180,8 +169,6 @@ def predict_labels(text, model, tokenizer, label_list, max_length=512):
     return labels
 
 
-# %%
-
 def contains_currency(tag):
     currency_symbols = ['$', '€', '£', '¥', '₹', '₽', '₩', '₪']
     if tag and tag.string:
@@ -215,14 +202,20 @@ def find_img_tag(start_tag):
 
     if previous_img:
         while (previous_img.get('class') == previous_img_class) or previous_img_class is None:
-            img_srcs.append(previous_img['src'])
+            # Check if 'src' attribute exists before appending
+            img_src = previous_img.get('src')
+            if img_src:
+                img_srcs.append(img_src)
             previous_img = previous_img.find_previous('img')
             if not previous_img:
                 break
         return img_srcs
     elif next_img:
         while (next_img.get('class') == next_img_class) or next_img_class is None:
-            img_srcs.append(next_img['src'])
+            # Check if 'src' attribute exists before appending
+            img_src = next_img.get('src')
+            if img_src:
+                img_srcs.append(img_src)
             next_img = next_img.find_next('img')
             if not next_img:
                 break
@@ -247,13 +240,11 @@ def find_product_indices(tokens, labels):
 
     return None, None
 
-
-# %%
 def inference_on_link(link):
     print(f"Running inference on: {link}")
     word_tag_tuples, title, url_last_path, soup = link_content(link)
     if word_tag_tuples is None:
-        return None
+        return None, None, None, link
 
     input, word_tag_tuples = formated_link_content(word_tag_tuples, title,
                                                    url_last_path)  # This contains the [TEXT] tokens as touples
@@ -283,14 +274,32 @@ def inference_on_link(link):
     elif url_start is not None:
         product_name = url_tokens[url_start:url_end + 1]
         return product_name, None, None, link
-    return None
+    return None, None, None, link
 
 
 # print(inference_on_link(
 #     'https://claytongrayhome.com/sitemap_products_1.xml?from=7491002949&to=6858385588272'))
 
 
-# %%
+# def inference_on_links(links, max_workers=32):
+#     results = []
+#     # ThreadPoolExecutor for concurrent execution
+#     with ThreadPoolExecutor(max_workers=max_workers) as executor:
+#         # Submit tasks for concurrent execution
+#         futures = {executor.submit(inference_on_link, link): link for link in links}
+#
+#         for future in as_completed(futures):
+#             link = futures[future]
+#             try:
+#                 result = future.result()  # Get the result of the inference
+#                 results.append(result)
+#                 print(f"Processed link: {link}, result: {result}")
+#             except Exception as e:
+#                 print(f"Error processing link {link}: {e}")
+#
+#     return results
+
+
 
 # class FileUpdateHandler(FileSystemEventHandler):
 #     def __init__(self, inference_callback, links_file):
