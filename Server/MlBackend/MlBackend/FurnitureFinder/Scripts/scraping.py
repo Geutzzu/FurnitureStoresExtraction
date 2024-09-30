@@ -22,7 +22,7 @@ import random
 import time
 
 
-dict_href_links = {}  # Dictionary to store all the links found
+
 wanted_words = None  # Words that should be in the URL
 is_sitemap = True
 custom_sitemap_tags = None
@@ -53,7 +53,7 @@ def get_data(url):
 
         # Handle rate-limiting (HTTP 429) by pausing and retrying
         if response.status_code == 429:
-            tqdm.write(f"FROM GET_DATA: Rate limit reached. Sleeping before retrying {url}")
+            # tqdm.write(f"FROM GET_DATA: Rate limit reached. Sleeping before retrying {url}")
             # print(f"FROM GET_DATA: Rate limit reached. Sleeping before retrying {url}")
             time.sleep(random.uniform(4, 8))  # Random delay to avoid detection
             return get_data(url)
@@ -61,13 +61,13 @@ def get_data(url):
         if response.status_code == 200:
             return response.content  # Return HTML content if successful
 
-        tqdm.write(f"FROM GET_DATA: Failed to retrieve {url}, Status Code: {response.status_code}")
+        # tqdm.write(f"FROM GET_DATA: Failed to retrieve {url}, Status Code: {response.status_code}")
 
         # print(f"FROM GET_DATA: Failed to retrieve {url}, Status Code: {response.status_code}")
         return None
 
     except requests.RequestException as e:
-        tqdm.write(f"FROM GET_DATA: Error fetching {url}: {e}")
+        # tqdm.write(f"FROM GET_DATA: Error fetching {url}: {e}")
         # print(f"FROM GET_DATA: Error fetching {url}: {e}")
         return None
 
@@ -77,8 +77,36 @@ def get_data(url):
 def is_valid_link(url,
                   wanted_words=None):  # I used these parameters in case I separate the two app features, but I dont see the need right now (they are basically global variables I know but its python)
     # Exclude common unwanted patterns
-    unwanted_patterns = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.css', '.js', '.ico', 'tel:', 'mailto:', '#',
-                         'twitter', 'instagram', 'facebook', 'youtube', 'pinterest', 'linkedin', 'whatsapp']
+    unwanted_patterns = [
+    # Account/Authentication Related
+    "login", "sign-up", "register", "account", "auth", "forgot-password",
+    "reset-password", "logout", "user-profile",
+
+    # Non-Product Pages
+    "blog", "article", "news", "press", "about-us", "team", "careers", "jobs",
+    "contact", "help", "faq", "support", "terms", "privacy-policy", "disclaimer",
+    "feedback", "reviews", "promotions",
+
+    # Media or External Resources
+    "pdf", "jpg", "jpeg", "png", "gif", "mp4", "video", "audio", "image", "media",
+    "download", "upload",
+
+    # Advertising and Tracking
+    "ads", "ad", "affiliate", "campaign", "referral", "tracking", "utm_",
+
+    # Search and Filtering
+    "search", "filter", "query", "results", "sort", "pagination",
+
+    # Non-Essential Pages
+    "rss", "archive", "calendar", "event", "newsletter", "survey",
+
+    # E-commerce Irrelevant Pages
+    "cart", "checkout", "order-history", "wishlist", "invoice", "payment",
+    "shipping", "return-policy",
+
+    # Miscellaneous
+    "javascript", "api", "backend", "test", "tmp", "dev", "staging"
+]
     for pattern in unwanted_patterns:
         if pattern in url:
             return False
@@ -91,7 +119,9 @@ def is_valid_link(url,
     return False
 
 
-def get_links_from_sitemap(website_link, custom_sitemap_tags=None,
+
+
+def get_links_from_sitemap(website_link, dict_href_links,  custom_sitemap_tags=None,
                            wanted_words=None):  # modified version from the one in the other notebook
     # Set the base of the URL depending on whether "collections" or "products" is in the link
     website_origin = get_base_url(website_link)
@@ -133,15 +163,21 @@ def get_links_from_sitemap(website_link, custom_sitemap_tags=None,
 
     # Convert list of links to a dictionary with "Not-checked" as the default value for each
     dict_links = dict.fromkeys(list_links, "Not-checked")
-    return dict_links
+    return dict_links, dict_href_links
+
+def soup_trimmer(soup):
+    for script in soup(["script", "style", "footer", "nav", "header", "noscript", "head"]):
+        script.extract()
+    return soup
 
 
-def get_links(website_link, wanted_words=None):
+def get_links(website_link, dict_href_links,  wanted_words=None):
     # Set the base of the URL depending on whether "collections" or "products" is in the link
     website_origin = get_base_url(website_link)
 
     html_data = get_data(website_link)
     soup = BeautifulSoup(html_data, "html.parser")
+    soup = soup_trimmer(soup)
     list_links = []
 
     for link in soup.find_all("a", href=True):
@@ -160,7 +196,7 @@ def get_links(website_link, wanted_words=None):
         # Handle relative URLs that start with "/"
         elif href.startswith("/"):
             # print(href)
-            link_with_www = website_origin + href[1:]
+            link_with_www = website_origin + href
             # print("adjusted link =", link_with_www)
             link_to_append = link_with_www
 
@@ -172,7 +208,7 @@ def get_links(website_link, wanted_words=None):
 
     # Convert list of links to a dictionary with "Not-checked" as the default value for each
     dict_links = dict.fromkeys(list_links, "Not-checked")
-    return dict_links
+    return dict_links, dict_href_links
 
 
 def write_links_to_csv(links_dict, csv_filename):
@@ -185,42 +221,48 @@ def write_links_to_csv(links_dict, csv_filename):
     print(f"Links saved to {csv_filename}.")
 
 
-def get_subpage_links(l, is_sitemap=False, custom_sitemap_tags=None, wanted_words=None, max_depth=3, current_depth=0,
+def get_subpage_links(l, dict_href_links, is_sitemap=False, custom_sitemap_tags=None, wanted_words=None, max_depth=2, current_depth=0,
                       write_frequency=20, csv_filename="app_feature_test.csv"):
     processed_links_count = 0
+    dict_href_links_new = dict_href_links.copy()
 
     if current_depth >= max_depth:
         return l
 
     with ThreadPoolExecutor(max_workers=32) as executor:
-
         if is_sitemap:
-            futures = {executor.submit(get_links_from_sitemap, link, custom_sitemap_tags, wanted_words): link for link
+            futures = {executor.submit(get_links_from_sitemap, link, dict_href_links ,custom_sitemap_tags, wanted_words): link for link
                        in l if l[link] == "Not-checked"}
         else:
-            futures = {executor.submit(get_links, link, wanted_words): link for link in l if l[link] == "Not-checked"}
+            futures = {executor.submit(get_links, link, dict_href_links , wanted_words): link for link in l if l[link] == "Not-checked"}
 
         for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures),
                            desc="Processing subpage links"):
             link = futures[future]
             try:
-                dict_links_subpages = future.result()
+                dict_links_subpages, dict_href_links_new = future.result()
                 # print(f"Processed {link} with {len(dict_links_subpages)} subpages.")
             except Exception as e:
-                print(f"Error fetching {link}: {e}")
+                # print(f"Error fetching {link}: {e}")
+                l[link] = "Checked"
+                processed_links_count += 1
+
+                # Write to file every 'write_frequency' processed links
+                if processed_links_count >= write_frequency:  # this actually writes all the links to the csv file - even the not checked ones but in my case it is sufficient
+                    #write_links_to_csv(l, csv_filename)
+                    processed_links_count = 0  # Reset the counter
                 continue
             l[link] = "Checked"
             l.update(dict_links_subpages)
-
             processed_links_count += 1
 
             # Write to file every 'write_frequency' processed links
             if processed_links_count >= write_frequency:  # this actually writes all the links to the csv file - even the not checked ones but in my case it is sufficient
-                write_links_to_csv(l, csv_filename)
+                #write_links_to_csv(l, csv_filename)
                 processed_links_count = 0  # Reset the counter
 
     # Recursively call the function for the next depth level
-    return get_subpage_links(l, is_sitemap, custom_sitemap_tags, wanted_words, max_depth, current_depth + 1,
+    return get_subpage_links(l, dict_href_links_new , is_sitemap, custom_sitemap_tags, wanted_words, max_depth, current_depth + 1,
                              write_frequency, csv_filename)
 
 

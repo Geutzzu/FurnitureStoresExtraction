@@ -241,7 +241,7 @@ def find_product_indices(tokens, labels):
     return None, None
 
 def inference_on_link(link):
-    print(f"Running inference on: {link}")
+    # print(f"Running inference on: {link}")
     word_tag_tuples, title, url_last_path, soup = link_content(link)
     if word_tag_tuples is None:
         return None, None, None, link

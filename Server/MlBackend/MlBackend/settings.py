@@ -47,8 +47,11 @@ ASGI_APPLICATION = 'MlBackend.routing.application'
 
 # Example for in-memory channel layer
 CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'CONFIG': {
+            "capacity": 10000,
+        },
     },
 }
 
