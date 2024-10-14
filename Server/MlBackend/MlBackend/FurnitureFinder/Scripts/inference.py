@@ -19,7 +19,7 @@ import time
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 import torch
 
-model_name = model_checkpoint = "MlBackend/FurnitureFinder/Models/full_text_strictly_labeled_86000_0.87"
+model_name = model_checkpoint = "MlBackend/FurnitureFinder/Models/0.80_F1_64_BATCH_NOT_SL"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForTokenClassification.from_pretrained(model_name)
 label_list = ['O', 'B-PRODUCT', 'I-PRODUCT']
