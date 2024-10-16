@@ -6,6 +6,7 @@ import threading
 import sys
 
 import requests
+from nltk.corpus import twitter_samples
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
@@ -49,7 +50,7 @@ def get_data(url):
     headers = {"User-Agent": random.choice(USER_AGENTS)}  # Rotate user-agent
 
     try:
-        response = requests.get(url, headers=headers, timeout=5)
+        response = requests.get(url, headers=headers, timeout=10)
 
         # Handle rate-limiting (HTTP 429) by pausing and retrying
         if response.status_code == 429:
@@ -88,8 +89,8 @@ def is_valid_link(url,
     "feedback", "reviews", "promotions",
 
     # Media or External Resources
-    "pdf", "jpg", "jpeg", "png", "gif", "mp4", "video", "audio", "image", "media",
-    "download", "upload",
+    ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".video", ".audio", ".image", ".media",
+    ".download", "upload", "assets", "static", "css", "js", "fonts", "icons",
 
     # Advertising and Tracking
     "ads", "ad", "affiliate", "campaign", "referral", "tracking", "utm_",
@@ -105,7 +106,12 @@ def is_valid_link(url,
     "shipping", "return-policy",
 
     # Miscellaneous
-    "javascript", "api", "backend", "test", "tmp", "dev", "staging"
+    "javascript", "mailto:", "tel:", "sms:", "geo:", "maps.", "calendar.", "webinar",
+
+    # Social Media
+    "twitter.com", "facebook.com", "instagram.com", "linkedin.com", "pinterest.com", "youtube.com", "tiktok.com",
+    "snapchat.com", "whatsapp.com", "reddit.com", "tumblr.com", "vimeo.com", "flickr.com", "quora.com", "medium.com",
+    "sharer.php", "share.php", "share?", "share=", "share/", "share-", "share.", "share_", "share~", "share&",
 ]
     for pattern in unwanted_patterns:
         if pattern in url:
@@ -149,9 +155,7 @@ def get_links_from_sitemap(website_link, dict_href_links,  custom_sitemap_tags=N
 
         # Handle relative URLs that start with "/"
         elif link.startswith("/"):
-            # print(href)
             link_with_www = website_origin + link[1:]
-            # print("adjusted link =", link_with_www)
             link_to_append = link_with_www
 
         # If link_to_append is not None, check if it's already in dict_href_links and if it's accessible
@@ -195,9 +199,7 @@ def get_links(website_link, dict_href_links,  wanted_words=None):
 
         # Handle relative URLs that start with "/"
         elif href.startswith("/"):
-            # print(href)
             link_with_www = website_origin + href
-            # print("adjusted link =", link_with_www)
             link_to_append = link_with_www
 
         # If link_to_append is not None, check if it's already in dict_href_links and if it's accessible

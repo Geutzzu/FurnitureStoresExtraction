@@ -40,7 +40,9 @@ const ProductApp = () => {
             const data = JSON.parse(event.data);
             if (data.message) {
                 setStatusMessage(data.message);
-                setIsLoading(statusMessage.includes("Inference: Inference completed."));
+                if (data.message === "Inference: Inference completed.") {
+                    setIsLoading(false);
+                }
                 console.log("Status message: ", data.message);
             }
             else if (data.product_name && data.link) {
