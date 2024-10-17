@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Pagination from './Pagination';
+import placeholderImage from '../assets/placeholder-image.png'; // Add a placeholder image
 
 const ProductTable = ({ products = [] }) => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -51,21 +52,21 @@ const ProductTable = ({ products = [] }) => {
                 </div>
             </div>
 
-            <div className="relative flex flex-col w-full h-full overflow-scroll text-gray-700 bg-white shadow-md rounded-lg bg-clip-border">
-                <table className="w-full text-left table-auto min-w-max">
+            <div className="relative flex flex-col w-full h-full overflow-auto text-gray-700 bg-white shadow-md rounded-lg bg-clip-border">
+                <table className="w-full table-auto text-left min-w-max border-collapse" style={{ tableLayout: 'fixed' }}>
                     <thead>
                         <tr className="border-b border-slate-300 bg-slate-50">
-                            <th className="p-4 text-sm font-normal leading-none text-slate-500">Images</th>
-                            <th className="p-4 text-sm font-normal leading-none text-slate-500">Name</th>
-                            <th className="p-4 text-sm font-normal leading-none text-slate-500">Price</th>
-                            <th className="p-4 text-sm font-normal leading-none text-slate-500">Link</th>
+                            <th className="p-4 text-sm font-normal leading-none text-slate-500 w-1/5">Images</th>
+                            <th className="p-4 text-sm font-normal leading-none text-slate-500 w-2/5">Name</th>
+                            <th className="p-4 text-sm font-normal leading-none text-slate-500 w-1/5">Price</th>
+                            <th className="p-4 text-sm font-normal leading-none text-slate-500 w-1/5">Link</th>
                         </tr>
                     </thead>
                     <tbody>
                         {currentProducts.map((product, index) => (
                             <tr key={index} className="hover:bg-slate-50">
                                 <td className="p-4 border-b border-slate-200 py-5">
-                                    <div className="flex items-center">
+                                    <div className="flex items-center justify-center">
                                         {/* Previous Image Button */}
                                         {product.product_img_urls && product.product_img_urls.length > 1 && (
                                             <button
@@ -84,9 +85,17 @@ const ProductTable = ({ products = [] }) => {
                                                 src={product.product_img_urls[currentImageIndex[index]]}
                                                 alt={product.product_name}
                                                 className="w-16 h-16 object-cover rounded mx-2"
+                                                onError={(e) => {
+                                                    e.target.onerror = null; // Prevent infinite loop if placeholder fails
+                                                    e.target.src = placeholderImage; // Fallback to placeholder image
+                                                }}
                                             />
                                         ) : (
-                                            <p>No Image Available</p>
+                                            <img
+                                                src={placeholderImage} // Placeholder image if no image URL
+                                                alt="Placeholder"
+                                                className="w-16 h-16 object-cover rounded mx-2"
+                                            />
                                         )}
 
                                         {/* Next Image Button */}
@@ -102,20 +111,27 @@ const ProductTable = ({ products = [] }) => {
                                         )}
                                     </div>
                                 </td>
-                                <td className="p-4 border-b border-slate-200 py-5">
-                                    <p className="block font-semibold text-sm text-slate-800">{product.product_name}</p>
+                                <td className="p-4 border-b border-slate-200 py-5 overflow-hidden">
+                                    <p
+                                        className="block font-semibold text-sm text-slate-800"
+                                        style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                                        title={product.product_name} // Tooltip to show full name on hover
+                                    >
+                                        {product.product_name}
+                                    </p>
                                 </td>
                                 <td className="p-4 border-b border-slate-200 py-5">
                                     <p className="text-sm text-slate-500">
                                         {product.product_price ? `${product.product_price}` : 'Price not available'}
                                     </p>
                                 </td>
-                                <td className="p-4 border-b border-slate-200 py-5">
+                                <td className="p-4 border-b border-slate-200 py-5 overflow-hidden">
                                     <a
                                         href={product.link}
-                                        className="text-blue-500 underline"
+                                        className="text-blue-500 underline truncate"
                                         target="_blank"
                                         rel="noreferrer"
+                                        style={{ display: 'inline-block', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}
                                     >
                                         View Product
                                     </a>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import InstructionsDropdown from "./InstructionsDropdown.jsx";
 
-const UrlInput = ({ onSubmit }) => {
+const UrlInput = ({ onSubmit, isSidebarOpen, toggleSidebar, isInstructionsOpen, toggleInstructions }) => {
   const [url, setUrl] = useState("");
   const [customSitemapTags, setCustomSitemapTags] = useState("");
   const [wantedWords, setWantedWords] = useState("");
@@ -20,107 +21,94 @@ const UrlInput = ({ onSubmit }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4 max-w-full">
-      <h1 className="text-4xl font-bold text-gray-900 mb-6 text-center max-w-full pb-6">
-        Hello, my name is FurniMax !
-      </h1>
+    <div className={`fixed top-0 left-0 h-full bg-white shadow-lg transform transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} w-[20%] min-w-[250px]`}>
+      <div className="relative">
+        {/* Open/Close Sidebar Button */}
+        <button
+          className="bg-blue-500 text-white px-4 py-2 absolute right-[-40px] top-4 transform -rotate-90 "
+          onClick={toggleSidebar}
+        >
+          {isSidebarOpen ? "Close" : "Open"}
+        </button>
 
-      <h2 className="text-2xl font-semibold text-gray-700 mb-4 pb-20">Give me a URL and I will help you find the furniture of your dreams!</h2>
+        {/* InstructionsDropdown Button */}
+        <div className="absolute top-16 right-[-40px] mr-4 mt-3" > {/* Adjust top offset here */}
+          <InstructionsDropdown
+            isInstructionsOpen={isInstructionsOpen}
+            toggleInstructions={toggleInstructions}
+          />
+        </div>
+      </div>
 
-      <div className="flex flex-col lg:flex-row w-full max-w-[1280px] space-y-6 lg:space-y-0 lg:space-x-6">
+      <div className="p-6">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+          Search for Furniture
+        </h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-6">
+            <label className="block text-gray-700 mb-2" htmlFor="urlInput">
+              Website URL:
+            </label>
+            <input
+              type="url"
+              id="urlInput"
+              placeholder="https://myfurniture.com/furniture"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
 
-        <div className="flex-1 lg:w-2/3 bg-white p-8 rounded-lg shadow-md">
-          {/* Form */}
-          <form onSubmit={handleSubmit}>
-            {/* URL Input */}
-            <div className="mb-6">
-              <label className="block text-gray-700 text-lg mb-2" htmlFor="urlInput">
-                Website URL:
-              </label>
-              <input
-                type="url"
-                id="urlInput"
-                placeholder="https://myfurniture.com/furniture"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="appearance-none border border-gray-300 w-full text-gray-700 py-3 px-4 leading-tight focus:outline-none focus:border-blue-500 rounded-lg"
-                required
-              />
-            </div>
+          <div className="mb-6 flex items-center">
+            <input
+              type="checkbox"
+              checked={searchSubpages}
+              onChange={() => setSearchSubpages(!searchSubpages)}
+              className="mr-3"
+            />
+            <label className="text-gray-700">Search subpages for furniture</label>
+          </div>
 
-            {/* Search Subpages Checkbox */}
-            <div className="mb-6 flex items-center">
-              <input
-                type="checkbox"
-                checked={searchSubpages}
-                onChange={() => setSearchSubpages(!searchSubpages)}
-                className="mr-3 h-5 w-5"
-              />
-              <label className="text-gray-700 text-lg">Search subpages for furniture</label>
-            </div>
-
-            {/* Custom Words in URLs - Shown conditionally */}
-            {searchSubpages && (
+          {searchSubpages && (
+            <>
               <div className="mb-6">
-                <label className="block text-gray-700 text-lg mb-2" htmlFor="wantedWordsInput">
-                  Custom Paths in URLs:
+                <label className="block text-gray-700 mb-2" htmlFor="wantedWordsInput">
+                  Custom Paths in URLs (Optional):
                 </label>
                 <input
                   type="text"
                   id="wantedWordsInput"
-                  placeholder="Enter custom paths separated by commas (e.g., /products/, /furniture/)"
+                  placeholder="Enter custom paths separated by commas"
                   value={wantedWords}
                   onChange={(e) => setWantedWords(e.target.value)}
-                  className="appearance-none border border-gray-300 w-full text-gray-700 py-3 px-4 leading-tight focus:outline-none focus:border-blue-500 rounded-lg"
+                  className="w-full p-2 border rounded"
                 />
               </div>
-            )}
 
-            {/* Custom Web Tags Input - Shown conditionally */}
-            {searchSubpages && (
               <div className="mb-6">
-                <label className="block text-gray-700 text-lg mb-2" htmlFor="customSitemapTagsInput">
-                  Custom XML Tags:
+                <label className="block text-gray-700 mb-2" htmlFor="customSitemapTagsInput">
+                  Custom XML Tags (Optional):
                 </label>
                 <input
                   type="text"
                   id="customSitemapTagsInput"
-                  placeholder="Enter custom tags separated by commas ( 'loc' is used by default) - Fill only for scraping sitemaps!"
+                  placeholder="Enter custom tags separated by commas"
                   value={customSitemapTags}
                   onChange={(e) => setCustomSitemapTags(e.target.value)}
-                  className="appearance-none border border-gray-300 w-full text-gray-700 py-3 px-4 leading-tight focus:outline-none focus:border-blue-500 rounded-lg"
+                  className="w-full p-2 border rounded"
                 />
               </div>
-            )}
+            </>
+          )}
 
-            {/* Submit Button */}
-            <div className="flex justify-center">
-              <button
-                type="submit"
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-all duration-300"
-              >
-                Search Furniture
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Description Card */}
-        <div className="flex-1 lg:w-1/3 bg-gray-200 p-8 rounded-lg shadow-md">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">How to Use</h2>
-          <p className="text-gray-700 mb-4">
-            1. Enter a valid website URL in the input box on the left. The link can lead to any website or sitemap.
-          </p>
-          <p className="text-gray-700 mb-4">
-            2. If you'd like to search the subpages of the website for furniture products, check the "Search subpages for furniture" box. It will go through all the href links on the website if you did not provide a sitemap URL.
-          </p>
-          <p className="text-gray-700 mb-4">
-            3. Optionally, you can enter custom paths in URLs (e.g., /products/, /furniture/) to refine your search. Perhaps you know the website structure and want to search only for certain paths that contain what you desire. I strongly encourage using this since the scraping algorithm will catch a lot of irrelevant links otherwise.
-          </p>
-          <p className="text-gray-700">
-            4. If you're scraping sitemaps, you can provide custom tags (specific XML tags like xhtml:link) for satisfying any sitemap format. If left empty, the default tag 'loc' will be used (commonly used in sitemaps).
-          </p>
-        </div>
+          <button
+            type="submit"
+            className="bg-blue-500 text-white w-full py-2 rounded"
+          >
+            Search Furniture
+          </button>
+        </form>
       </div>
     </div>
   );
