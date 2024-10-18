@@ -16,11 +16,11 @@ class InferenceConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        link = data.get('link')
+        links = data.get('links')
         scrape_subpages = data.get('scrape_subpages', False)
         custom_sitemap_tags = data.get('custom_sitemap_tags', None)
         wanted_words = data.get('wanted_words', None)
-        await self.processing_user_request(link, scrape_subpages=scrape_subpages, custom_sitemap_tags=custom_sitemap_tags, wanted_words=wanted_words)
+        await self.processing_user_request(links, scrape_subpages=scrape_subpages, custom_sitemap_tags=custom_sitemap_tags, wanted_words=wanted_words)
 
     async def send_status_message(self, phase, message):
         await self.send(text_data=json.dumps({
@@ -84,16 +84,27 @@ class InferenceConsumer(AsyncWebsocketConsumer):
                     print(f"Error processing link {links[processed_links]}: {e}")
 
     # Refactor processing_user_request inside the consumer
-    async def processing_user_request(self, link, scrape_subpages=False, custom_sitemap_tags=None, wanted_words=None):
-        if scrape_subpages is False:
-            await self.inference_on_link_with_response(link)
-            await self.send_status_message("Inference", "Inference completed.")
-        else:
-            is_sitemap = False
-            if '.xml' in link:
-                is_sitemap = True
+    async def processing_user_request(self, links, scrape_subpages=False, custom_sitemap_tags=None, wanted_words=None):
+        processed_links = 0
 
-            await self.send_status_message("Scraping", "Starting to scrape website links.")
-            links = await self.scrape_website_links(link, is_sitemap=is_sitemap, custom_sitemap_tags=custom_sitemap_tags, wanted_words=wanted_words)
-            await self.inference_on_links(links)
-            await self.send_status_message("Inference", "Inference completed.")
+        if scrape_subpages is False:
+            for link in links:
+                await self.send_status_message("Iteration", f"{processed_links + 1} {link}")
+                processed_links += 1
+
+                await self.inference_on_link_with_response(link)
+                await self.send_status_message("Inference", "Inference completed.")
+        else:
+            for link in links:
+                await self.send_status_message("Iteration", f"{processed_links + 1} {link}")
+                processed_links += 1
+
+                is_sitemap = False
+                if '.xml' in link:
+                    is_sitemap = True
+
+                await self.send_status_message("Scraping", "Done 0 iterations. Found 0 links.")
+                scraped_links = await self.scrape_website_links(link, is_sitemap=is_sitemap, custom_sitemap_tags=custom_sitemap_tags, wanted_words=wanted_words)
+                await self.send_status_message("Scraping", "Scraping completed.")
+                await self.inference_on_links(scraped_links)
+                await self.send_status_message("Inference", "Inference completed.")
