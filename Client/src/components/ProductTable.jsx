@@ -43,21 +43,69 @@ const ProductTable = ({ products = [] }) => {
         console.log('Updated Products in ProductTable: ', products);
     }, [products]);
 
+    // Function to export CSV
+    const exportToCSV = () => {
+        const csvData = products.map(product => ({
+            Name: product.product_name,
+            Price: product.product_price || 'Price not available',
+            Link: product.link
+        }));
+
+        const csvRows = [
+            ['Name', 'Price', 'Link'], // Header row
+            ...csvData.map(row => [row.Name.replace(',', ''), row.Price.replace(',', '.'), row.Link])
+        ];
+
+        const csvContent = "data:text/csv;charset=utf-8,"
+            + csvRows.map(e => e.join(",")).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "products.csv");
+        document.body.appendChild(link); // Required for Firefox
+        link.click();
+    };
+
     return (
-        <div className="max-w-[1280px] mx-auto pb-28">
+        <div className="max-w-[1280px] mx-auto pb-28 ">
             <div className="w-full flex justify-between items-center mb-3 mt-12 pl-3">
                 <div>
                     <h3 className="text-lg font-semibold text-slate-800">Furniture Products extracted</h3>
                     <p className="text-slate-500">This is what I found!</p>
                 </div>
+
+                {/* Export to CSV Button */}
+                <button
+                    className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => exportToCSV(products)}
+                >
+                    {/* SVG Icon for Download */}
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                        stroke="currentColor"
+                        className="w-6 h-6"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2m-4-4l-4 4m0 0l-4-4m4 4V4"
+                        />
+                    </svg>
+                    <span>Export CSV</span>
+                </button>
             </div>
 
-            <div className="relative flex flex-col w-full h-full overflow-auto text-gray-700 bg-white shadow-md rounded-lg bg-clip-border">
-                <table className="w-full table-auto text-left min-w-max border-collapse" style={{ tableLayout: 'fixed' }}>
+            <div
+                className="relative flex flex-col w-full h-full overflow-auto text-gray-700 bg-white shadow-md rounded-lg bg-clip-border">
+                <table className="w-full table-auto text-left min-w-max border-collapse" style={{tableLayout: 'fixed'}}>
                     <thead>
-                        <tr className="border-b border-slate-300 bg-slate-50">
-                            <th className="p-4 text-sm font-normal leading-none text-slate-500 w-1/5">Images</th>
-                            <th className="p-4 text-sm font-normal leading-none text-slate-500 w-2/5">Name</th>
+                    <tr className="border-b border-slate-300 bg-slate-50">
+                        <th className="p-4 text-sm font-normal leading-none text-slate-500 w-1/5">Images</th>
+                        <th className="p-4 text-sm font-normal leading-none text-slate-500 w-2/5">Name</th>
                             <th className="p-4 text-sm font-normal leading-none text-slate-500 w-1/5">Price</th>
                             <th className="p-4 text-sm font-normal leading-none text-slate-500 w-1/5">Link</th>
                         </tr>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import UrlInput from './UrlInput';
 import ProductTable from './ProductTable';
-import InstructionsDropdown from './InstructionsDropdown'; // New Component for Instructions
+import InstructionsDropdown from './InstructionsDropdown';
 
 const ProductApp = () => {
   const [statusMessage, setStatusMessage] = useState('');
@@ -29,6 +29,13 @@ const ProductApp = () => {
       );
     }
   };
+
+  // const handleKill = async () => {
+  //   if (socketRef.current) {
+  //     socketRef.current.send(JSON.stringify({ command: "stop" }));
+  //     setIsLoading(false);
+  //   }
+  // }
 
   useEffect(() => {
     const socket = new WebSocket("ws://" + import.meta.env.VITE_ML_BACKEND_URL + "/ws/inference/");
@@ -77,7 +84,7 @@ const ProductApp = () => {
 
   return (
     <div className="flex h-screen">
-      <UrlInput onSubmit={handleSubmit} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} isInstructionsOpen={isInstructionsOpen} toggleInstructions={toggleInstructions} />
+
 
       <div className={`flex-1 ml-0 ${isSidebarOpen ? 'ml-[20%]' : ''} transition-all duration-300`}>
         <div className="p-4 mt-16 -ml-[30px]">
@@ -95,11 +102,25 @@ const ProductApp = () => {
             )}
           </div>
 
+          {/*/!* Stop Button *!/*/}
+          {/*{isLoading && (*/}
+          {/*  <div className="mt-4 flex justify-center">*/}
+          {/*    <button */}
+          {/*      className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"*/}
+          {/*      onClick={handleKill}*/}
+          {/*    >*/}
+          {/*      Stop Process*/}
+          {/*    </button>*/}
+          {/*  </div>*/}
+          {/*)}*/}
+
           {/* Product Table */}
           {results.length > 0 && <ProductTable products={results} />}
         </div>
       </div>
+       <UrlInput onSubmit={handleSubmit} isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} isInstructionsOpen={isInstructionsOpen} toggleInstructions={toggleInstructions} />
     </div>
+
   );
 };
 
