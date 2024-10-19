@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Pagination from './Pagination';
 import placeholderImage from '../assets/placeholder-image.png'; // Add a placeholder image
 
-const ProductTable = ({ products = [] }) => {
+const ProductTable = ({ products = [], onClearClick, isLoading }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5; // Set your items per page
     const totalItems = products.length;
@@ -45,27 +45,45 @@ const ProductTable = ({ products = [] }) => {
 
     // Function to export CSV
     const exportToCSV = () => {
-        const csvData = products.map(product => ({
-            Name: product.product_name,
-            Price: product.product_price || 'Price not available',
-            Link: product.link
-        }));
+  // Map the products array to create a cleaner CSV data array
+  const csvData = products.map(product => ({
+    Name: product.product_name || 'Name not available',
+    Price: product.product_price || 'Price not available',
+    Link: product.link
+  }));
 
-        const csvRows = [
-            ['Name', 'Price', 'Link'], // Header row
-            ...csvData.map(row => [row.Name.replace(',', ''), row.Price.replace(',', '.'), row.Link])
-        ];
 
-        const csvContent = "data:text/csv;charset=utf-8,"
-            + csvRows.map(e => e.join(",")).join("\n");
+  const csvRows = [
+        ['Name', 'Price', 'Link'], // CSV Header
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "products.csv");
-        document.body.appendChild(link); // Required for Firefox
-        link.click();
+        ...csvData.map(row => {
+
+          const name = String(row.Name)
+            .replace(/,/g, ' ') // Replace commas with spaces
+            .replace(/\n+/g, ' ') // Remove newlines and replace them with spaces
+
+          let price = String(row.Price)
+            .replace(/,/g, '.') // Replace commas with dots for numerical formatting
+            .replace(/\s+/g, ' ') // Replace all sequences of spaces/newlines with a single space
+            .trim();
+
+          const link = row.Link;
+
+          return [name, price, link];
+        })
+      ];
+
+      const csvContent = csvRows.map(row => row.join(',')).join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', 'products.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     };
+
 
     return (
         <div className="max-w-[1280px] mx-auto pb-28 ">
@@ -75,9 +93,10 @@ const ProductTable = ({ products = [] }) => {
                     <p className="text-slate-500">This is what I found!</p>
                 </div>
 
-                {/* Export to CSV Button */}
+                <div className={"flex space-x-4"}>
+                    {/* Export to CSV Button */}
                 <button
-                    className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                    className="flex items-center space-x-2 bg-darkGraphite hover:opacity-90 text-white font-bold py-2 px-4 rounded"
                     onClick={() => exportToCSV(products)}
                 >
                     {/* SVG Icon for Download */}
@@ -97,6 +116,30 @@ const ProductTable = ({ products = [] }) => {
                     </svg>
                     <span>Export CSV</span>
                 </button>
+                {/* Clear table button  */}
+                {!isLoading && (
+                    <button
+                    className="flex items-center space-x-2 bg-darkGraphite hover:opacity-90 text-white font-bold py-2 px-4 rounded"
+                    onClick={onClearClick}
+                >
+                    {/* SVG Icon for Clear */}
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                        stroke="currentColor"
+                        className="w-6 h-6"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
+                    </svg>
+                    <span>Clear</span>
+                </button> )}
+                </div>
             </div>
 
             <div
@@ -176,7 +219,7 @@ const ProductTable = ({ products = [] }) => {
                                 <td className="p-4 border-b border-slate-200 py-5 overflow-hidden">
                                     <a
                                         href={product.link}
-                                        className="text-blue-500 underline truncate"
+                                        className="text-slateGray underline truncate"
                                         target="_blank"
                                         rel="noreferrer"
                                         style={{ display: 'inline-block', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}

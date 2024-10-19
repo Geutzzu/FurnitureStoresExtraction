@@ -61,7 +61,7 @@ class InferenceConsumer(AsyncWebsocketConsumer):
             print(f"Error processing link {link}: {e}")
 
     # Refactor inference_on_links inside the consumer
-    async def inference_on_links(self, links, max_workers=16):
+    async def inference_on_links(self, links, max_workers=32):
         total_links = len(links)
         processed_links = 0
 
@@ -92,8 +92,11 @@ class InferenceConsumer(AsyncWebsocketConsumer):
                 await self.send_status_message("Iteration", f"{processed_links + 1} {link}")
                 processed_links += 1
 
+                await self.send_status_message("Inference", "Started inference.")
                 await self.inference_on_link_with_response(link)
                 await self.send_status_message("Inference", "Inference completed.")
+
+                await asyncio.sleep(0.1) # this is done so that the websocket can send the message before the next iteration
         else:
             for link in links:
                 await self.send_status_message("Iteration", f"{processed_links + 1} {link}")
@@ -108,3 +111,5 @@ class InferenceConsumer(AsyncWebsocketConsumer):
                 await self.send_status_message("Scraping", "Scraping completed.")
                 await self.inference_on_links(scraped_links)
                 await self.send_status_message("Inference", "Inference completed.")
+
+                await asyncio.sleep(0.1) # this is done so that the websocket can send the message before the next iteration

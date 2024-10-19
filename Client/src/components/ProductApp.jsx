@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import UrlInput from './UrlInput';
 import ProductTable from './ProductTable';
-import InstructionsDropdown from './InstructionsDropdown';
+import SpinnerIcon from "./svg/SpinnerIcon.jsx";
 
 const ProductApp = () => {
   const [statusMessage, setStatusMessage] = useState('');
@@ -25,8 +25,8 @@ const ProductApp = () => {
     setIsLoading(true);
     totalNumLinksRef.current = formData.urls.length;
 
-    setScrapingStatus('Not started');
-    setInferenceStatus('Not started');
+    setScrapingStatus('Not started.');
+    setInferenceStatus('Not started.');
 
     loadingRef.current?.scrollIntoView({ behavior: 'smooth' });
 
@@ -42,6 +42,18 @@ const ProductApp = () => {
     }
   };
 
+  // This will be sent to the ProductTable component as a prop
+  const handleClearClick = () => {
+    console.log('Clearing results...');
+    setResults([]);
+    setIsLoading(false);
+    setScrapingStatus('Not started.');
+    setInferenceStatus('Not started.');
+    setCurrentLink('');
+    totalNumLinksRef.current = 0;
+    currentLinkIndexRef.current = -1;
+  }
+
   useEffect(() => {
     const socket = new WebSocket("ws://" + import.meta.env.VITE_ML_BACKEND_URL + "/ws/inference/");
     socketRef.current = socket;
@@ -55,7 +67,7 @@ const ProductApp = () => {
 
       if (data.message) {
         setStatusMessage(data.message);
-
+        console.log(data.message);
         if (data.message.startsWith("Iteration: ")) {
           console.log(data.message);
           const iterationIndex = parseInt(data.message.split(" ")[1]);
@@ -112,19 +124,23 @@ const ProductApp = () => {
         <div className="p-4 mt-16 -ml-[30px]">
           {/* Loading Section */}
           <div ref={loadingRef} className="mt-4 mb-8">
-            {isLoading && (
+            {isLoading && results.length === 0 && ( /// isLoading && only
               <div className="flex items-center justify-center space-x-4">
-                <svg className="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                </svg>
-                <p className="text-lg text-gray-700">Processing...</p>
+                <SpinnerIcon className="h-10 w-10 animate-spin" />
+                <p className="text-xl text-gray-700 font-bold">Processing...</p>
               </div>
             )}
           </div>
 
+          {/* Placeholder for results table */}
+          {results.length === 0 && !isLoading && (
+              <div className="flex items-center justify-center h-96">
+              <p className="text-xl text-gray-700 font-bold ">Start searching for furniture in order to see results.</p>
+              </div>
+          )}
+
           {/* Product Table */}
-          {results.length > 0 && <ProductTable products={results} />}
+          {results.length > 0 && <ProductTable products={results} onClearClick={handleClearClick} isLoading={isLoading} />}
         </div>
       </div>
 
