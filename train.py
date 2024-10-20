@@ -112,8 +112,7 @@ def read_csv_file(file_path):
     return train_sentences, train_labels
 
 
-# train_sentences, train_labels = read_conll_file("data/training_data_v1.conll")
-train_sentences, train_labels = read_csv_file("data/tokenized_data1.csv")
+train_sentences, train_labels = read_csv_file("ModelDevelopment/Data/tokenized_data1.csv")
 
 print(train_sentences[:5], train_labels[:5])
 

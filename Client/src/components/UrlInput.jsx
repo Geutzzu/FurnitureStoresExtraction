@@ -130,7 +130,7 @@ const UrlInput = ({
                     disabled={isLoading}
                 />
                 <UploadIcon className="h-6 w-6 text-gray-500 mr-2" />
-                <span className="text-gray-500">{csvFileName ? csvFileName : "Choose a CSV file"}</span>
+                <span className="text-gray-500">{csvFileName ? csvFileName : "Upload a CSV file"}</span>
               </div>
               {csvFileName && (
                   <div className="mt-2 flex justify-between items-center">
@@ -138,7 +138,7 @@ const UrlInput = ({
                     <button
                         type="button"
                         onClick={handleFileRemove}
-                        className="text-red-500 hover:underline text-sm"
+                        className="text-gray-500 underline hover:text-gray-900 text-sm"
                     >
                       Remove File
                     </button>
