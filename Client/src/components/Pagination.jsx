@@ -1,5 +1,6 @@
 import React from 'react';
 
+// this handles the pagination of the products table
 const Pagination = ({ totalPages, currentPage, onPageChange, totalItems, itemsPerPage }) => {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(startItem + itemsPerPage - 1, totalItems);
@@ -22,6 +23,7 @@ const Pagination = ({ totalPages, currentPage, onPageChange, totalItems, itemsPe
         {startItem}-{endItem} of {totalItems}
       </span>
       <div>
+        { /* left button */}
         <button
           onClick={handlePrevious}
           disabled={currentPage === 1}
@@ -29,6 +31,7 @@ const Pagination = ({ totalPages, currentPage, onPageChange, totalItems, itemsPe
         >
           &lt;
         </button>
+        { /* right button */}
         <button
           onClick={handleNext}
           disabled={currentPage === totalPages}

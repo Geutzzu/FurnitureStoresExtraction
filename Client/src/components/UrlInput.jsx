@@ -21,16 +21,15 @@ const UrlInput = ({
   isLoading,
   currentLink
 }) => {
-  const [url, setUrl] = useState("");  // Single URL input
+  const [url, setUrl] = useState("");  // single URL input
   const [customSitemapTags, setCustomSitemapTags] = useState("");
   const [wantedWords, setWantedWords] = useState("");
   const [searchSubpages, setSearchSubpages] = useState(false);
-  const [csvUrls, setCsvUrls] = useState([]);  // Array for URLs extracted from CSV
-  const [csvFileName, setCsvFileName] = useState("");  // To display uploaded file name
+  const [csvUrls, setCsvUrls] = useState([]);  // array for URLs extracted from CSV
+  const [csvFileName, setCsvFileName] = useState("");  // to display uploaded file name
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
 
     const formData = {
       urls: csvUrls.length > 0 ? csvUrls : [url],
@@ -41,6 +40,7 @@ const UrlInput = ({
     onSubmit(formData);
   };
 
+  // function to handle CSV file upload using PapaParse library
   const handleCsvUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -93,7 +93,7 @@ const UrlInput = ({
             Search for Furniture
           </h2>
           <form onSubmit={handleSubmit}>
-            {/* Single URL input */}
+            {/* single URL input */}
             <div className="mb-6">
               <label className="block text-gray-700 mb-2" htmlFor="urlInput">
                 Website URL:
@@ -105,8 +105,8 @@ const UrlInput = ({
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   className="w-full p-2 border rounded"
-                  required={!csvUrls.length}  // Required only if no CSV is uploaded
-                  disabled={csvUrls.length > 0 || isLoading}  // Disable if a CSV file is uploaded
+                  required={!csvUrls.length}  // required only if no CSV is uploaded
+                  disabled={csvUrls.length > 0 || isLoading}  // disable if a CSV file is uploaded
               />
             </div>
 
@@ -114,7 +114,7 @@ const UrlInput = ({
               <p className="text-gray-700 mb-2 align-center">OR</p>
             </div>
 
-            {/* File input for CSV upload with SVG icon and remove option */}
+            {/* file input for CSV upload with SVG icon and remove option */}
             <div className="mb-6">
               <label className="block text-gray-700 mb-2" htmlFor="csvInput">
                 Upload CSV with URLs:
@@ -146,7 +146,7 @@ const UrlInput = ({
               )}
             </div>
 
-            {/* Checkbox to search subpages */}
+            {/* checkbox to search subpages */}
             <div className="mb-6">
               <input
                   type="checkbox"
@@ -159,7 +159,7 @@ const UrlInput = ({
               <label className="text-gray-700">Search subpages for furniture</label>
             </div>
 
-            {/* Conditional inputs for sitemap tags and custom paths */}
+            {/* inputs for sitemap tags and custom paths */}
             {searchSubpages && (
                 <>
                   <div className="mb-6">
@@ -203,7 +203,8 @@ const UrlInput = ({
             </button>
           </form>
         </div>
-        {/* Current Status Display */}
+
+        {/* processing status bar*/}
       {currentLinkIndex > -1 && (
           <div className="p-4 border-t mt-4 bg-gray-50 shadow-lg">
             <div className="flex items-center mb-4">
@@ -212,8 +213,6 @@ const UrlInput = ({
                     <CheckIcon className="h-5 w-5 text-green-500" aria-hidden="true"/>
                 )}
             </div>
-
-
             <div className="mb-4 flex items-center">
             <h4 className="text-sm font-semibold text-gray-700 mr-2">Link {currentLinkIndex} of {totalNumLinks}:</h4>
               <span className="text-xs text-gray-500">
@@ -245,9 +244,6 @@ const UrlInput = ({
       )}
 
       </div>
-
-
-
     </div>
   );
 };

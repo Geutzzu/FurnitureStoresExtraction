@@ -7,14 +7,17 @@ from .Scripts.inference import inference_on_link
 from .Scripts.scraping import get_subpage_links
 
 
+# websocket consumer which will be connected to a websocket through the frontend
+# the websocket logic is simple, any user will connect to the websocket when opening the frontend and can communicate with it
+# the user can make a request to get product information from websites and he will receive status updates and the results of the inference
 class InferenceConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        await self.accept()
+        await self.accept() # accept the connection - no need for any checks
 
     async def disconnect(self, close_code):
         pass
 
-    async def receive(self, text_data):
+    async def receive(self, text_data): # here the user sends a request to get information about products on a website and / or to scrape the website for more links
         data = json.loads(text_data)
         links = data.get('links')
         scrape_subpages = data.get('scrape_subpages', False)
@@ -22,12 +25,12 @@ class InferenceConsumer(AsyncWebsocketConsumer):
         wanted_words = data.get('wanted_words', None)
         await self.processing_user_request(links, scrape_subpages=scrape_subpages, custom_sitemap_tags=custom_sitemap_tags, wanted_words=wanted_words)
 
-    async def send_status_message(self, phase, message):
+    async def send_status_message(self, phase, message): # for sending status updates to the user
         await self.send(text_data=json.dumps({
             'message': f"{phase}: {message}"
         }))
 
-    async def send_inference_result(self, product_name, product_price, product_img_urls, link):
+    async def send_inference_result(self, product_name, product_price, product_img_urls, link): # for sending the results of the inference to the user
         await self.send(text_data=json.dumps({
             'product_name': product_name,
             'product_price': product_price,
@@ -35,6 +38,7 @@ class InferenceConsumer(AsyncWebsocketConsumer):
             'link': link
         }))
 
+    # main loop from the notebooks made asynchronous
     async def scrape_website_links(self, url, is_sitemap=False, custom_sitemap_tags=None, wanted_words=None, output_file="data/scraped_links.csv"):
         dict_links = {url: "Not-checked"}
         dict_href_links = {}
@@ -52,7 +56,7 @@ class InferenceConsumer(AsyncWebsocketConsumer):
         links = [link for link in dict_links.keys()]
         return links
 
-    # Refactor inference_on_link_with_response inside the consumer
+    # inference for one link with status updates
     async def inference_on_link_with_response(self, link):
         try:
             result = inference_on_link(link)
@@ -60,7 +64,7 @@ class InferenceConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print(f"Error processing link {link}: {e}")
 
-    # Refactor inference_on_links inside the consumer
+    # inference for multiple links with status updates using multithreading
     async def inference_on_links(self, links, max_workers=32):
         total_links = len(links)
         processed_links = 0
@@ -83,7 +87,9 @@ class InferenceConsumer(AsyncWebsocketConsumer):
                 except Exception as e:
                     print(f"Error processing link {links[processed_links]}: {e}")
 
-    # Refactor processing_user_request inside the consumer
+
+    # code for processing the user request - scraping the website and inferring the product information
+    # this will be done for each link sent by the user
     async def processing_user_request(self, links, scrape_subpages=False, custom_sitemap_tags=None, wanted_words=None):
         processed_links = 0
 

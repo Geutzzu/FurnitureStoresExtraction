@@ -1,29 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import Pagination from './Pagination';
 import placeholderImage from '../assets/placeholder-image.png'; // Add a placeholder image
+import CloseIcon from "./svg/CloseIcon.jsx";
+import DownloadIcon from "./svg/DownloadIcon.jsx";
+
+
 
 const ProductTable = ({ products = [], onClearClick, isLoading }) => {
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5; // Set your items per page
+    const itemsPerPage = 5; // set your items per page
     const totalItems = products.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-    // State to store the current image index for each product
+    // state to store the current image index for each product
     const [currentImageIndex, setCurrentImageIndex] = useState({});
 
-    // Slice products for the current page
+    // slice products for the current page
     const currentProducts = products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-    // Initialize image index for each product
+    // initialize image index for each product
     useEffect(() => {
         const initialImageIndexes = {};
         products.forEach((product, index) => {
-            initialImageIndexes[index] = 0; // Set first image as default for each product
+            initialImageIndexes[index] = 0; // set first image as default for each product
         });
         setCurrentImageIndex(initialImageIndexes);
     }, [products]);
 
-    // Handle next image click
+    // handle next image click - they will not work while products are being added to this table
     const handleNextImage = (productIndex, totalImages) => {
         setCurrentImageIndex((prevIndexes) => ({
             ...prevIndexes,
@@ -31,7 +35,7 @@ const ProductTable = ({ products = [], onClearClick, isLoading }) => {
         }));
     };
 
-    // Handle previous image click
+    // handle previous image click - they will not work while products are being added to this table ( to fix this I would need to not rewrite all the results and indexes on each new product )
     const handlePreviousImage = (productIndex, totalImages) => {
         setCurrentImageIndex((prevIndexes) => ({
             ...prevIndexes,
@@ -43,34 +47,31 @@ const ProductTable = ({ products = [], onClearClick, isLoading }) => {
         console.log('Updated Products in ProductTable: ', products);
     }, [products]);
 
-    // Function to export CSV
+    // function to export CSV
     const exportToCSV = () => {
-  // Map the products array to create a cleaner CSV data array
-  const csvData = products.map(product => ({
-    Name: product.product_name || 'Name not available',
-    Price: product.product_price || 'Price not available',
-    Link: product.link
-  }));
+          // map the products array to create a cleaner CSV data array
+          const csvData = products.map(product => ({
+            Name: product.product_name || 'Name not available',
+            Price: product.product_price || 'Price not available',
+            Link: product.link
+          }));
 
+          const csvRows = [
+                ['Name', 'Price', 'Link'], // CSV Header
 
-  const csvRows = [
-        ['Name', 'Price', 'Link'], // CSV Header
+                ...csvData.map(row => {
+                  const name = String(row.Name)
+                    .replace(/,/g, ' ') // replace commas with spaces
+                    .replace(/\n+/g, ' ') // remove newlines and replace them with spaces
 
-        ...csvData.map(row => {
+                  let price = String(row.Price)
+                    .replace(/,/g, '.') // replace commas with dots for numerical formatting
+                    .replace(/\s+/g, ' ') // replace all sequences of spaces/newlines with a single space
+                    .trim();
 
-          const name = String(row.Name)
-            .replace(/,/g, ' ') // Replace commas with spaces
-            .replace(/\n+/g, ' ') // Remove newlines and replace them with spaces
-
-          let price = String(row.Price)
-            .replace(/,/g, '.') // Replace commas with dots for numerical formatting
-            .replace(/\s+/g, ' ') // Replace all sequences of spaces/newlines with a single space
-            .trim();
-
-          const link = row.Link;
-
-          return [name, price, link];
-        })
+                  const link = row.Link;
+                  return [name, price, link];
+                })
       ];
 
       const csvContent = csvRows.map(row => row.join(',')).join('\n');
@@ -94,49 +95,23 @@ const ProductTable = ({ products = [], onClearClick, isLoading }) => {
                 </div>
 
                 <div className={"flex space-x-4"}>
-                    {/* Export to CSV Button */}
+                    {/* export to CSV Button */}
                 <button
                     className="flex items-center space-x-2 bg-darkGraphite hover:opacity-90 text-white font-bold py-2 px-4 rounded"
                     onClick={() => exportToCSV(products)}
                 >
                     {/* SVG Icon for Download */}
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2"
-                        stroke="currentColor"
-                        className="w-6 h-6"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2m-4-4l-4 4m0 0l-4-4m4 4V4"
-                        />
-                    </svg>
+                    <DownloadIcon className="w-6 h-6"/>
                     <span>Export CSV</span>
                 </button>
-                {/* Clear table button  */}
+                {/* clear table button  */}
                 {!isLoading && (
                     <button
                     className="flex items-center space-x-2 bg-darkGraphite hover:opacity-90 text-white font-bold py-2 px-4 rounded"
                     onClick={onClearClick}
                 >
                     {/* SVG Icon for Clear */}
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2"
-                        stroke="currentColor"
-                        className="w-6 h-6"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M6 18L18 6M6 6l12 12"
-                        />
-                    </svg>
+                    <CloseIcon className="w-6 h-6"/>
                     <span>Clear</span>
                 </button> )}
                 </div>
@@ -158,7 +133,7 @@ const ProductTable = ({ products = [], onClearClick, isLoading }) => {
                             <tr key={index} className="hover:bg-slate-50">
                                 <td className="p-4 border-b border-slate-200 py-5">
                                     <div className="flex items-center justify-center">
-                                        {/* Previous Image Button */}
+                                        {/* previous Image Button */}
                                         {product.product_img_urls && product.product_img_urls.length > 1 && (
                                             <button
                                                 onClick={() =>
@@ -170,26 +145,26 @@ const ProductTable = ({ products = [], onClearClick, isLoading }) => {
                                             </button>
                                         )}
 
-                                        {/* Show the current image */}
+                                        {/* show the current image */}
                                         {product.product_img_urls && product.product_img_urls.length > 0 ? (
                                             <img
                                                 src={product.product_img_urls[currentImageIndex[index]]}
                                                 alt={product.product_name}
                                                 className="w-16 h-16 object-cover rounded mx-2"
                                                 onError={(e) => {
-                                                    e.target.onerror = null; // Prevent infinite loop if placeholder fails
-                                                    e.target.src = placeholderImage; // Fallback to placeholder image
+                                                    e.target.onerror = null; // prevent infinite loop if placeholder fails
+                                                    e.target.src = placeholderImage; // fallback to placeholder image
                                                 }}
                                             />
                                         ) : (
                                             <img
-                                                src={placeholderImage} // Placeholder image if no image URL
+                                                src={placeholderImage} // placeholder image if no image URL
                                                 alt="Placeholder"
                                                 className="w-16 h-16 object-cover rounded mx-2"
                                             />
                                         )}
 
-                                        {/* Next Image Button */}
+                                        {/* next Image Button */}
                                         {product.product_img_urls && product.product_img_urls.length > 1 && (
                                             <button
                                                 onClick={() =>
@@ -206,7 +181,7 @@ const ProductTable = ({ products = [], onClearClick, isLoading }) => {
                                     <p
                                         className="block font-semibold text-sm text-slate-800"
                                         style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                                        title={product.product_name} // Tooltip to show full name on hover
+                                        title={product.product_name}
                                     >
                                         {product.product_name}
                                     </p>
@@ -233,7 +208,7 @@ const ProductTable = ({ products = [], onClearClick, isLoading }) => {
                 </table>
             </div>
 
-            {/* Pagination Component */}
+            {/* pagination Component */}
             <Pagination
                 totalPages={totalPages}
                 currentPage={currentPage}

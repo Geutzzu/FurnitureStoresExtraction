@@ -3,24 +3,23 @@ import UrlInput from './UrlInput';
 import ProductTable from './ProductTable';
 import SpinnerIcon from "./svg/SpinnerIcon.jsx";
 
+// main component
 const ProductApp = () => {
   const [statusMessage, setStatusMessage] = useState('');
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true); // State to toggle sidebar
   const [isInstructionsOpen, setIsInstructionsOpen] = useState(false); // State for instructions dropdown
-  const socketRef = useRef(null);
-  const loadingRef = useRef(null);
-  /// const [currentLinkIndex, setCurrentLinkIndex] = useState(-1);
-  /// const [totalNumLinks, setTotalNumLinks] = useState(0);
   const [currentLink, setCurrentLink] = useState('');
   const [scrapingStatus, setScrapingStatus] = useState('Not started');
   const [inferenceStatus, setInferenceStatus] = useState('Not started');
 
-  const totalNumLinksRef = useRef(0);
-  const currentLinkIndexRef = useRef(-1);
+  const socketRef = useRef(null); // websocket reference for the connection (should not be a state)
+  const loadingRef = useRef(null); // same here
+  const totalNumLinksRef = useRef(0); // reference to the total number of links to scrape ( for status bar )
+  const currentLinkIndexRef = useRef(-1); // reference to the current link index ( for status bar )
 
-
+  // all the logic for handling the form submission and websocket connection
   const handleSubmit = async (formData) => {
     setIsLoading(true);
     totalNumLinksRef.current = formData.urls.length;
@@ -30,19 +29,20 @@ const ProductApp = () => {
 
     loadingRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-    if (socketRef.current) {
-      socketRef.current.send(
+    if (socketRef.current) { // if we are connected to the websocket
+      socketRef.current.send( // send the form data to the backend
         JSON.stringify({
-          links: formData.urls,
-          scrape_subpages: formData.searchSubpages,
-          custom_sitemap_tags: formData.customSitemapTags.split(","),
-          wanted_words: formData.wantedWords.split(","),
+          links: formData.urls, // the URLs to scrape
+          scrape_subpages: formData.searchSubpages, // whether to scrape subpages
+          custom_sitemap_tags: formData.customSitemapTags.split(","), // custom sitemap tags
+          wanted_words: formData.wantedWords.split(","), // wanted words
         })
       );
     }
   };
 
-  // This will be sent to the ProductTable component as a prop
+  // this will be sent to the ProductTable component as a prop to clear the results
+  // its located here since I need multiple components to be able to perform actions accordingly
   const handleClearClick = () => {
     console.log('Clearing results...');
     setResults([]);
@@ -55,8 +55,9 @@ const ProductApp = () => {
   }
 
   useEffect(() => {
+    // create a new websocket connection to the backend endpoint (/ws/inference/)
     const socket = new WebSocket("ws://" + import.meta.env.VITE_ML_BACKEND_URL + "/ws/inference/");
-    socketRef.current = socket;
+    socketRef.current = socket; // store the reference in the ref
 
     socket.onopen = () => {
       console.log('WebSocket connection established.');
@@ -65,22 +66,22 @@ const ProductApp = () => {
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
-      if (data.message) {
-        setStatusMessage(data.message);
+      if (data.message) { // if the message is a status message
+        setStatusMessage(data.message); // set the status message
         console.log(data.message);
-        if (data.message.startsWith("Iteration: ")) {
+        if (data.message.startsWith("Iteration: ")) { // if the message is an iteration message
           console.log(data.message);
-          const iterationIndex = parseInt(data.message.split(" ")[1]);
-          const link = data.message.split(" ")[2];
+          const iterationIndex = parseInt(data.message.split(" ")[1]); // we update the current link index
+          const link = data.message.split(" ")[2]; // we get the current link ( by convention the link is the second word in the message )
           currentLinkIndexRef.current = iterationIndex;
           setCurrentLink(link);
         }
 
-        if (data.message.startsWith("Scraping: ")) {
+        if (data.message.startsWith("Scraping: ")) { // if the message is a scraping status message
           setScrapingStatus(data.message);
         }
 
-        if (data.message.startsWith("Inference: ")) {
+        if (data.message.startsWith("Inference: ")) { // if the message is an inference status message
           setInferenceStatus(data.message);
           console.log(totalNumLinksRef.current, currentLinkIndexRef.current);
           if (data.message === "Inference: Inference completed." && totalNumLinksRef.current <= currentLinkIndexRef.current) {
@@ -88,41 +89,41 @@ const ProductApp = () => {
             setIsLoading(false);
           }
         }
-      } else if (data.product_name && data.link) {
+      } else if (data.product_name && data.link) { // we got data to add to the results
         setResults((prevResults) => [
-          ...prevResults,
+          ...prevResults, // keep the previous results
           {
-            product_name: data.product_name,
-            product_price: data.product_price,
-            product_img_urls: data.product_img_urls,
-            link: data.link,
+            product_name: data.product_name, // add the product data to the results
+            product_price: data.product_price, // add the product data to the results
+            product_img_urls: data.product_img_urls, // add the product data to the results
+            link: data.link, // add the product data to the results
           },
         ]);
       }
     };
 
-    socket.onclose = (event) => {
+    socket.onclose = (event) => { // when the connection is closed
       console.log('WebSocket connection closed. Code:', event.code, 'Reason:', event.reason);
     };
 
     return () => {
-      socketRef.current?.close();
+      socketRef.current?.close(); // close the connection when the component is unmounted
     };
   }, []);
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    setIsSidebarOpen(!isSidebarOpen); // toggle the sidebar
   };
 
   const toggleInstructions = () => {
-    setIsInstructionsOpen(!isInstructionsOpen);
+    setIsInstructionsOpen(!isInstructionsOpen); // toggle the instructions dropdown
   };
 
   return (
     <div className="flex h-screen">
       <div className={`flex-1 ml-0 ${isSidebarOpen ? 'ml-[20%]' : ''} transition-all duration-300`}>
         <div className="p-4 mt-16 -ml-[30px]">
-          {/* Loading Section */}
+          {/* loading Section */}
           <div ref={loadingRef} className="mt-4 mb-8">
             {isLoading && results.length === 0 && ( /// isLoading && only
               <div className="flex items-center justify-center space-x-4">
@@ -132,18 +133,20 @@ const ProductApp = () => {
             )}
           </div>
 
-          {/* Placeholder for results table */}
+          {/* placeholder for results table */}
           {results.length === 0 && !isLoading && (
               <div className="flex items-center justify-center h-96">
               <p className="text-xl text-gray-700 font-bold ">Start searching for furniture in order to see results.</p>
               </div>
           )}
 
-          {/* Product Table */}
+          {/* product Table */}
           {results.length > 0 && <ProductTable products={results} onClearClick={handleClearClick} isLoading={isLoading} />}
         </div>
       </div>
 
+
+      {/* URL input */}
       <UrlInput
         onSubmit={handleSubmit}
         isSidebarOpen={isSidebarOpen}
