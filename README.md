@@ -1,35 +1,44 @@
 # Furniture Store Extraction Application
 A tool to extract, display and export data about furniture products from any website, built with Django and React and powered by a fine-tuned RoBERTa model for Named Entity Recognition (NER).
 
-1. [Motivation and Overview](#motivation-and-overview)
-    1. [Task Overview](#task)
-    2. [My approach](#my-approach)
+<details>
+  <summary>Table of Contents</summary>
 
-2. [Presentation of Functionality and Features](#features)
-    1. [Full demonstration for one link and its subpages](#features)
-    2. [How to use](#features)
-    3. [Real-time scraping and inference updates using WebSockets](#features)
-    4. [Results Table](#features)
+  1. [Motivation and Overview](#motivation-and-overview)
+      1. [Task Overview](#task)
+      2. [My approach](#my-approach)
+  
+  2. [Presentation of Functionality and Features](#features)
+      1. [Full demonstration for one link and its subpages](#features)
+      2. [How to use](#features)
+      3. [Real-time scraping and inference updates using WebSockets](#features)
+      4. [Results Table](#features)
+  
+  3. [Installation and Setup](#installation-and-setup)
+      1. [Prerequisites](#prerequisites)
+      2. [Backend Setup (Django)](#backend-setup-django)
+      3. [Frontend Setup (React)](#frontend-setup-react)
+  
+  4. [Model Development](#model-development)
+      1. [Overview](#overview)
+      2. [Model Architecture](#model-architecture)
+      3. [Data Collection](#data-collection)
+      4. [Training Process](#training-process)
+      5. [Model Choices & Justifications](#model-choices-and-justifications)
+  
+  5. [Backend: Django Server](#backend-django-server)
+      1. [Libraries & Tools](#libraries-and-tools)
+      2. [WebSocket Integration](#websocket-integration)
+      3. [API Endpoints](#api-endpoints)
+  
+  6. [Frontend: React Client](#frontend-react-client)
+      1. [Libraries & Tools](#libraries-and-tools-frontend)
+      2. [UI Design](#ui-design)
+      3. [State Management & WebSocket Communication](#state-management-and-websocket-communication)
+  
+  7. [Future Enhancements](#future-enhancements)
 
-3. [Installation and Setup](#installation-and-setup)
-    1. [Prerequisites](#prerequisites)
-    2. [Backend Setup (Django)](#backend-setup-django)
-    3. [Frontend Setup (React)](#frontend-setup-react)
-4. [Model Development](#model-development)
-    1. [Overview](#overview)
-    2. [Model Architecture](#model-architecture)
-    3. [Data Collection](#data-collection)
-    4. [Training Process](#training-process)
-    5. [Model Choices & Justifications](#model-choices-and-justifications)
-5. [Backend: Django Server](#backend-django-server)
-    1. [Libraries & Tools](#libraries-and-tools)
-    2. [WebSocket Integration](#websocket-integration)
-    3. [API Endpoints](#api-endpoints)
-6. [Frontend: React Client](#frontend-react-client)
-    1. [Libraries & Tools](#libraries-and-tools-frontend)
-    2. [UI Design](#ui-design)
-    3. [State Management & WebSocket Communication](#state-management-and-websocket-communication)
-7. [Future Enhancements](#future-enhancements)
+</details>
 
 
 
@@ -136,6 +145,5 @@ that were small enough to be uploaded to GitHub).
 
 
 ## 3.2 Frontend Setup (React)
-
 
 
