@@ -119,195 +119,23 @@ The images are actually displayed using the src attribute of an img tag, so they
 
 # 3. Installation and Setup
 
-## 3.1 Prerequisites
+## 3.1 Prerequisites and Additional Downloads
 - The backend and notebooks were built using Python 3.12 (but should work with python 3.10+ as well).
 - The frontend was built using Node.js v20.15.0 (but should work with any relatively recent version of Node.js).
 - Any modern web browser (Chrome, Firefox, Edge, etc.).
 
-## 3.2 Frontend Setup (React)
-1. Clone the repository
+After you have all of the above, you can clone the repository using the following command:
 ```bash
-git clone
+git clone https://github.com/Geutzzu/FurnitureStoresExtraction.git
+```
+The repository contains three main directories:
+1. Client: contains the frontend code.
+2. Server: contains the backend code (without the model since its too large).
+3. ModelDevelopment: contains the notebooks used for model development (and some CSV files
+that were small enough to be uploaded to GitHub).
 
 
-[//]: # (2. Features)
+## 3.2 Frontend Setup (React)
 
-[//]: # (Extracts furniture data including product images, names, and prices.)
 
-[//]: # (Real-time scraping updates using WebSockets.)
 
-[//]: # (Pagination and dark mode toggle in the frontend.)
-
-[//]: # ([Add more relevant features here])
-
-[//]: # (3. Installation and Setup)
-
-[//]: # (3.1 Prerequisites)
-
-[//]: # (Python 3.8+)
-
-[//]: # (Node.js 14+)
-
-[//]: # ([Add any other dependencies])
-
-[//]: # (3.2 Backend Setup &#40;Django&#41;)
-
-[//]: # (bash)
-
-[//]: # (Copy code)
-
-[//]: # (# Clone the repository)
-
-[//]: # (git clone <your-repo-url>)
-
-[//]: # (cd <backend-directory>)
-
-[//]: # ()
-[//]: # (# Install dependencies)
-
-[//]: # (pip install -r requirements.txt)
-
-[//]: # ()
-[//]: # (# Run migrations)
-
-[//]: # (python manage.py migrate)
-
-[//]: # ()
-[//]: # (# Start Django server)
-
-[//]: # (python manage.py runserver)
-
-[//]: # (Make sure to configure .env file with your own environment variables.)
-
-[//]: # ()
-[//]: # (3.3 Frontend Setup &#40;React&#41;)
-
-[//]: # (bash)
-
-[//]: # (Copy code)
-
-[//]: # (# Navigate to frontend directory)
-
-[//]: # (cd <frontend-directory>)
-
-[//]: # ()
-[//]: # (# Install dependencies)
-
-[//]: # (npm install)
-
-[//]: # ()
-[//]: # (# Start development server)
-
-[//]: # (npm run dev)
-
-[//]: # (4. Model Development)
-
-[//]: # (4.1 Overview)
-
-[//]: # ([Placeholder Text])
-
-[//]: # (Description of the machine learning problem and the chosen approach.)
-
-[//]: # ()
-[//]: # (4.2 Model Architecture)
-
-[//]: # ([Placeholder Image/Diagram Placeholder])
-
-[//]: # (Explain the architecture of the model &#40;BERT-like model or other&#41; and how it works. Add details about any layers, embeddings, CRF layer, etc.)
-
-[//]: # ()
-[//]: # (4.3 Data Collection)
-
-[//]: # (Source of data &#40;public datasets, web scraping, etc.&#41;)
-
-[//]: # (Preprocessing steps)
-
-[//]: # (4.4 Training Process)
-
-[//]: # (Training configuration &#40;batch size, epochs, optimizer, etc.&#41;)
-
-[//]: # (Validation and test results &#40;metrics&#41;)
-
-[//]: # ([Placeholder for screenshots or training logs])
-
-[//]: # (4.5 Model Choices & Justifications)
-
-[//]: # (Why you chose the specific model.)
-
-[//]: # (Trade-offs considered &#40;e.g., speed vs accuracy&#41;.)
-
-[//]: # (How the model fits the NER problem of identifying furniture products.)
-
-[//]: # (5. Backend: Django Server)
-
-[//]: # (5.1 Libraries & Tools)
-
-[//]: # (Django: Web framework.)
-
-[//]: # (Django Channels: For WebSocket handling.)
-
-[//]: # (REST Framework: For API endpoints.)
-
-[//]: # ([Any other libraries you are using])
-
-[//]: # (5.2 WebSocket Integration)
-
-[//]: # ([Placeholder for technical explanation and diagrams])
-
-[//]: # (How WebSockets are used to provide real-time updates during scraping.)
-
-[//]: # ()
-[//]: # (5.3 API Endpoints)
-
-[//]: # ([Placeholder Text])
-
-[//]: # (List and describe the API endpoints exposed by the Django server, including input/output examples.)
-
-[//]: # ()
-[//]: # (6. Frontend: React Client)
-
-[//]: # (6.1 Libraries & Tools)
-
-[//]: # (React: UI library.)
-
-[//]: # (Axios: For HTTP requests.)
-
-[//]: # (WebSocket API: For real-time updates.)
-
-[//]: # ([Add others])
-
-[//]: # (6.2 UI Design)
-
-[//]: # ([Placeholder Screenshots of the UI])
-
-[//]: # (Explanation of how the UI is structured and design choices like theming, responsiveness, etc.)
-
-[//]: # ()
-[//]: # (6.3 State Management & WebSocket Communication)
-
-[//]: # (How state is handled &#40;with useState, useEffect&#41;.)
-
-[//]: # (WebSocket integration for live updates.)
-
-[//]: # (7. Future Enhancements)
-
-[//]: # ([Placeholder Text])
-
-[//]: # (List potential future improvements or features &#40;e.g., multi-language support, additional data analysis features&#41;.)
-
-[//]: # ()
-[//]: # (8. Contributing)
-
-[//]: # ([Placeholder Text])
-
-[//]: # (Guidelines on how to contribute to the project &#40;opening issues, creating pull requests, coding standards, etc.&#41;.)
-
-[//]: # ()
-[//]: # (9. License)
-
-[//]: # ([Placeholder Text])
-
-[//]: # (Include the type of license used.)
-
-[//]: # ()
-[//]: # ([Insert relevant images or diagrams where needed, including screenshots of the app interface, the model architecture, or system flow diagrams.])
