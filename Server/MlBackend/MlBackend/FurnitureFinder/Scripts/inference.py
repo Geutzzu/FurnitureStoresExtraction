@@ -9,7 +9,7 @@ import torch
 from MlBackend.FurnitureFinder.Scripts.boilerplate import get_data
 
 # load the model and tokenizer
-model_name = model_checkpoint = "MlBackend/FurnitureFinder/Models/ROB_0.81F1_16B_12000DAT"
+model_name = model_checkpoint = "MlBackend/FurnitureFinder/Models/ROB_0.89F1_16B_100000DAT"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForTokenClassification.from_pretrained(model_name)
 label_list = ['O', 'B-PRODUCT', 'I-PRODUCT']
@@ -116,7 +116,7 @@ def predict_labels(text, model, tokenizer, label_list, max_length=512):
 
 # methods for rule based price and image extraction (after finding the product name)
 def contains_currency(tag):
-    currency_symbols = ['$', '€', '£', '¥', '₹', '₽', '₩', '₪']
+    currency_symbols = ['$', '€', '£', '¥', '₹', '₽', '₩', '₪', 'RON' ]
     if tag and tag.string:
         text = tag.string
         for symbol in currency_symbols:

@@ -7,7 +7,6 @@ node_modules/
 # Ignore data files
 *.csv
 *.json
-*.txt
 
 # Ignore model checkpoint files
 *.pt
