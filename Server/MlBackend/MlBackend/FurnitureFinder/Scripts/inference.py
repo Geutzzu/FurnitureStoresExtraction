@@ -23,7 +23,7 @@ def clean_text(s):
 def has_letters(input_string):
     return any(char.isalpha() for char in input_string)
 
-# this maps the each token to its tag in html
+# this maps  each token to its tag in html
 def soup_mapper(soup, max_tokens=128):
     word_tag_tuples = []
     token_count = 0
@@ -74,7 +74,7 @@ def formated_link_content(word_tag_tuples, title, url_last_path):
 
     for word, tag in word_tag_tuples:
         clean_word = clean_text(word)
-        if clean_word:  # Only append if the word is not an empty string
+        if clean_word:  # only append if the word is not an empty string
             cleaned_word_tag_tuples.append((clean_word, tag))
 
     url_last_path_tokens = clean_text(url_last_path).split() if url_last_path else []
