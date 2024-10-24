@@ -127,7 +127,7 @@ The images are actually displayed using the src attribute of an img tag, so they
 ## 3.2 Frontend Setup (React)
 1. Clone the repository
 ```bash
-git clone 
+git clone
 
 
 [//]: # (2. Features)
