@@ -8,8 +8,8 @@ A tool to extract, display and export data about furniture products from any web
 2. [Presentation of Functionality and Features](#features)
     1. [Full demonstration for one link and its subpages](#features)
     2. [How to use](#features)
-    3. [Real-time scraping updates using WebSockets](#features)
-    4. [Export extracted data as CSV](#features)
+    3. [Real-time scraping and inference updates using WebSockets](#features)
+    4. [Results Table](#features)
 
 3. [Installation and Setup](#installation-and-setup)
     1. [Prerequisites](#prerequisites)
@@ -77,10 +77,57 @@ and a lot of information that is either hard to come by online, or even non-exis
 ## 2.1 Full demonstration for one link and its subpages
 
 ## 2.2 How to use
+A short guide on how to use the application is also present in dropdown menu of the user interface.
+In short, you can:
+- Paste a link to a furniture store page in the input field or upload a CSV file 
+with multiple links present on the first column (note that
+all the following options for extraction will apply to all the links in the CSV file).
+- Choose if you want to search the subpages of the link for products as well.
+- If you chose to search the subpages, you can also choose what paths the urls should contain (if what you search
+for contains /products/ in the URL for example).
+- If you entered a sitemap (with the .xml extension), you can choose the XML tag to search for (loc is the most commonly used).
+- After the scraping and inference is done, you can export the data as a CSV file with the click of a button.
+
+Please note that the application is intended for desktop use only, and the UI is not optimized for other devices.
+Also, the application as it stands is intended for running locally only, and not for deployment on a server.
 
 
+## 2.3 Real-time scraping and inference updates using WebSockets
+Over the course of the process, you can see progress updates in real time through WebSockets.
 
+One thing to note here, is that for scraping pages with a lot of matching links, the progress bar
+may not update that frequently (since it waits for the scraping of all the links from one recursion level before updating).
 
+Do not refresh the page while the process is ongoing, as you will no longer get UI updates from the backend.
+If you think the process is taking too long, you can always check the console to see the progress or 
+to kill the backend if needed (assuming you are running the application locally).
+
+## 2.4 Results Table
+After the scraping process is done, you will start to see the results from each link appear in the table.
+You can also scroll through all the pages at the same time as new products are being computed and added to the table.
+
+The table will contain the following collumns:
+- Images scraped from the page where the product was found (using a rule-based approach and not a model).
+- The name of the product found on the page (extracted by the model).
+- The price of the product found on the page (extracted using a rule-based approach).
+- The link to the page where the product was found.
+
+A known issue is that you cannot scroll through the images from a product in the table while inference is ongoing,
+as the images are not stored in any database and the table is rendered each time a new product is found.
+The images are actually displayed using the src attribute of an img tag, so they are not stored in memory either.
+ 
+
+# 3. Installation and Setup
+
+## 3.1 Prerequisites
+- The backend and notebooks were built using Python 3.12 (but should work with python 3.10+ as well).
+- The frontend was built using Node.js v20.15.0 (but should work with any relatively recent version of Node.js).
+- Any modern web browser (Chrome, Firefox, Edge, etc.).
+
+## 3.2 Frontend Setup (React)
+1. Clone the repository
+```bash
+git clone 
 
 
 [//]: # (2. Features)

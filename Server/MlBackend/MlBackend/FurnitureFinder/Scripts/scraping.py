@@ -34,7 +34,7 @@ def is_valid_link(url,
     # Non-Product Pages
     "blog", "article", "news", "press", "about-us", "team", "careers", "jobs",
     "contact", "help", "faq", "support", "terms", "privacy-policy", "disclaimer",
-    "feedback", "reviews", "promotions",
+    "feedback", "reviews", "promotions", "print",
 
     # Media or External Resources
     ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".mp4", ".video", ".audio", ".image", ".media",

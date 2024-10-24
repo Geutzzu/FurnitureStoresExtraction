@@ -26,7 +26,7 @@ const InstructionsDropdown = ({ isInstructionsOpen, toggleInstructions }) => {
                 <p className="mb-4">
                     2. If you'd like to search the subpages of the website for furniture
                     products, check the "Search subpages for furniture" box. It will go
-                    through all the href links on the website if you did not provide a
+                    through all the href links on the website recursively if you did not provide a
                     sitemap URL.
                 </p>
                 <p className="mb-4">
@@ -34,7 +34,7 @@ const InstructionsDropdown = ({ isInstructionsOpen, toggleInstructions }) => {
                     /products/, /furniture/) to refine your search. Perhaps you know
                     the website structure and want to search only for certain paths that
                     contain what you desire. I strongly encourage using this since the
-                    scraping algorithm will catch a lot of irrelevant links otherwise.
+                    scraping algorithm might catch some irrelevant links otherwise.
                 </p>
                 <p className="mb-4">
                     4. If you're scraping sitemaps, you can provide custom tags

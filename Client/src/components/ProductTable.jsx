@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Pagination from './Pagination';
-import placeholderImage from '../assets/placeholder-image.png'; // Add a placeholder image
+import placeholderImage from '../assets/placeholder-image.png'; // add a placeholder image
 import CloseIcon from "./svg/CloseIcon.jsx";
 import DownloadIcon from "./svg/DownloadIcon.jsx";
 
@@ -47,6 +47,7 @@ const ProductTable = ({ products = [], onClearClick, isLoading }) => {
         console.log('Updated Products in ProductTable: ', products);
     }, [products]);
 
+
     // function to export CSV
     const exportToCSV = () => {
           // map the products array to create a cleaner CSV data array
@@ -90,30 +91,27 @@ const ProductTable = ({ products = [], onClearClick, isLoading }) => {
         <div className="max-w-[1280px] mx-auto pb-28 ">
             <div className="w-full flex justify-between items-center mb-3 mt-12 pl-3">
                 <div>
-                    <h3 className="text-lg font-semibold text-slate-800">Furniture Products extracted</h3>
-                    <p className="text-slate-500">This is what I found!</p>
+                    <h3 className="text-lg font-semibold text-slate-800">Furniture Products Extracted</h3>
+                    <p className="text-slate-500">This is what I found !</p>
                 </div>
 
                 <div className={"flex space-x-4"}>
-                    {/* export to CSV Button */}
-                <button
-                    className="flex items-center space-x-2 bg-darkGraphite hover:opacity-90 text-white font-bold py-2 px-4 rounded"
-                    onClick={() => exportToCSV(products)}
-                >
-                    {/* SVG Icon for Download */}
-                    <DownloadIcon className="w-6 h-6"/>
-                    <span>Export CSV</span>
-                </button>
-                {/* clear table button  */}
-                {!isLoading && (
+                    {/* export to CSV button */}
                     <button
-                    className="flex items-center space-x-2 bg-darkGraphite hover:opacity-90 text-white font-bold py-2 px-4 rounded"
-                    onClick={onClearClick}
-                >
-                    {/* SVG Icon for Clear */}
-                    <CloseIcon className="w-6 h-6"/>
-                    <span>Clear</span>
-                </button> )}
+                        className="flex items-center space-x-2 bg-darkGraphite hover:opacity-90 text-white font-bold py-2 px-4 rounded"
+                        onClick={() => exportToCSV(products)}
+                    >
+                        <DownloadIcon className="w-6 h-6"/>
+                        <span>Export CSV</span>
+                    </button>
+                    {!isLoading && (
+                        <button
+                        className="flex items-center space-x-2 bg-darkGraphite hover:opacity-90 text-white font-bold py-2 px-4 rounded"
+                        onClick={onClearClick}
+                    >
+                        <CloseIcon className="w-6 h-6"/>
+                        <span>Clear</span>
+                    </button> )}
                 </div>
             </div>
 
@@ -164,7 +162,6 @@ const ProductTable = ({ products = [], onClearClick, isLoading }) => {
                                             />
                                         )}
 
-                                        {/* next Image Button */}
                                         {product.product_img_urls && product.product_img_urls.length > 1 && (
                                             <button
                                                 onClick={() =>
@@ -208,7 +205,7 @@ const ProductTable = ({ products = [], onClearClick, isLoading }) => {
                 </table>
             </div>
 
-            {/* pagination Component */}
+            {/* pagination component */}
             <Pagination
                 totalPages={totalPages}
                 currentPage={currentPage}
