@@ -248,7 +248,7 @@ Now, having said that, gathering data in an automated way that is coherent for a
 is very difficult. Conceptually, building an algorithm that can provide
 the dataset for your model would entail that you actually don't need the model in the first place.
 
-One of my initial conclusions whs that I needed to make the most out the data I had. I had a dataset
+One of my initial conclusions was that I needed to make the most out the data I had. I had a dataset
 of 705 furniture store links given for this task (in the `furniture stores pages.csv` file). It would have
 been a total waste not to search for products on all the pages of a given website. So this lead me into
 a rabbit hole of learning about web scraping and how I can get the most product links effectively and efficiently
@@ -260,8 +260,7 @@ common patterns in the website structure.
 
 Below I will go through what drove the decisions for my project notebook by notebook. I may not go into 
 too much detail here
-since the notebooks themselves contain their own share of comments and explanations. Also, going
-into too much detail about every little decision that I made would make this README longer that it already is.
+since the notebooks themselves contain their own share of comments and explanations. 
 
 ## 4.2. Data Collection and Preprocessing
 
