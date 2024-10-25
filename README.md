@@ -23,9 +23,9 @@ A tool to extract, display and export data about furniture products from any web
       - 3.4. [Notebooks Setup](#34-notebooks-setup)
 
   4. [Model Development](#4-model-development)
-      - 4.1. [Overview](#41-overview)
-      - 4.2. [Model Architecture](#42-model-architecture)
-      - 4.3. [Data Collection](#43-data-collection)
+      - 4.1. [Approach Overview](#41-approach-overview)
+      - 4.2. [Data Collection](#43-data-collection)
+      - 4.3. [Model Architecture](#42-model-architecture) 
       - 4.4. [Training Process](#44-training-process)
       - 4.5. [Model Choices & Justifications](#45-model-choices-and-justifications)
 
@@ -232,4 +232,103 @@ dependencies directly from the IDE. If installing through the IDE does not work,
 your project should work just fine.
 
 
+# 4. Model Development
 
+## 4.1. Approach Overview and Initial Challenges
+
+There is one thing I want to state from the start. The most challenging part in this project
+was gathering data and preparing it for training. There are 0 online resources that teach you how to
+get data and prepare it for training / fine-tuning a model for NER. The one and only approach you will find
+is to manually annotate the data. Now, the problem with this is that I totally refused to 
+manually annotate data. It felt like low-level work that for sure could be automated. Even manually labeling
+100 examples felt like a waste of time for me and for little result since 100 labeled examples are 
+probably not enough for such a complex task.
+
+Now, having said that, gathering data in an automated way that is coherent for a complex task like NER
+is very difficult. Conceptually, building an algorithm that can provide
+the dataset for your model would entail that you actually don't need the model in the first place.
+
+One of my initial conclusions whs that I needed to make the most out the data I had. I had a dataset
+of 705 furniture store links given for this task (in the `furniture stores pages.csv` file). It would have
+been a total waste not to search for products on all the pages of a given website. So this lead me into
+a rabbit hole of learning about web scraping and how I can get the most product links effectively and efficiently
+from any given website. 
+
+The thought process was that if I have enough data, I can make a rule-based 
+approach where I can get a chunk of it labeled correctly by looking at the html tags and 
+common patterns in the website structure.
+
+Below I will go through what drove the decisions for my project notebook by notebook. I may not go into 
+too much detail here
+since the notebooks themselves contain their own share of comments and explanations. Also, going
+into too much detail about every little decision that I made would make this README longer that it already is.
+
+## 4.2. Data Collection and Preprocessing
+
+Data collection and preprocessing were done in the 3 notebooks inside the `DataPreprocessingNotebooks` directory.
+
+### 1. Links Extraction `1_links_for_training.jpynb`:
+The goal with this notebook was to get as many links as possible that (most likely) contain products.
+No content gathered from this step, just the links.
+
+After trying a "brute force" approach that searched recursively for a tags in a page, I found out that
+most websites (that respect themselves) have a sitemap. Sitemaps proved to be way more efficient to scrape
+than recursively searching for a tags. The one problem with this was that not all the websites given had 
+a sitemap. 
+
+My script extracted 443 / 705 sitemaps from the given links, out of which not all were standard, easy to
+scrape, sitemaps, but considering my needs this was way more than enough and I found this soon enough.
+
+An early stopped run of my script gave me a dataset that contained ~278000 links out of which a little over 300
+unique domains (I forgot the exact value at the moment of writing) out of the 705 given. The script was early
+stopped since it was taking too long and that number of ~278000 links was where the algorithm was plateauing
+and not finding any new links.
+
+
+The final CSV is called `dispersed_link_data.csv` and below is a Google Drive link to it:
+- [dispersed_link_data.csv](https://drive.google.com/file/d/1PuN1kP2i6Jh1lIUMFqHaAr5AiubH356x/view?usp=sharing)
+
+![img.png](ForReadme/img_ecel.png)
+
+### 2. Raw Data Extraction `2_data_for_training.jpynb`:
+This aims to get the raw data from all the links gathered in the previous step. 
+
+This is also the right moment to explain the structure of the data that I will feed to the model
+and why it's designed like that.
+
+The main thing I noticed about most furniture store websites is that:
+- If they have a product name on the page, they will most likely have it in the h1 tag (
+I am referring to pages that feature one main product on them and not multiple ones like a category page).
+- That exact same product name will most likely be in the url path at the end of the link.
+- That exact same product name will also be located in the `<title>` tag of the page.
+
+Here is an example taken from a random link from the initial CSV:
+![img_3.png](ForReadme/img_33.png)
+![img.png](ForReadme/img_coco.png)
+![img_1.png](ForReadme/img_11.png)
+![img_2.png](ForReadme/img_22.png)
+
+This holds true for most of the websites that I have seen. Seeing that the information I am looking 
+for (the product name) is present most of the time in these places I have decided to scrape from each link just that:
+URL last path, title and h1 tag. 
+
+If I can get even just a handful of correctly annotated examples
+that feature these 3 pieces of information, I may be able to train a model that can 
+understand what a product name is.
+
+Notice how I am using the sheer amount of data to "chery-pick" these good examples
+that contain information in just the places I am looking for. I have the luxury to ignore
+ websites that don't contain proper information (that contain bad words in the title for example). 
+
+I can just keep the good data entries in a "greedy" type of way. 
+
+A CSV that contains 100000 entries made using the process described 
+above can be downloaded from the following link:
+
+- [preprocessed_data_from_all_sitemaps_100000.csv](https://drive.google.com/file/d/1M7PrWwwaTLH2GbFK7qVg8Ci2uZiK3Dba/view?usp=sharing)
+
+This CSV is rather huge, and computing it took me a few hours (due to the overhead of scraping). That is why I stopped at 100000 entries
+and even that is very large. The size also comes from the fact that I stored the entire text from the pages
+(minus some tags that I removed).
+
+### 3. Labeling and Filtering `3_labeling_and_filtering.jpynb`:
