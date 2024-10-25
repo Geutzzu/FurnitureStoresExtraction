@@ -103,7 +103,6 @@ for contains /products/ in the URL for example).
 Please note that the application is intended for desktop use only, and the UI is not optimized for other devices.
 Also, the application as it stands is intended for running locally only, and not for deployment on a server.
 
-
 ## 2.3. Real-time scraping and inference updates using WebSockets
 Over the course of the process, you can see progress updates in real time through WebSockets.
 
@@ -113,6 +112,8 @@ may not update that frequently (since it waits for the scraping of all the links
 Do not refresh the page while the process is ongoing, as you will no longer get UI updates from the backend.
 If you think the process is taking too long, you can always check the console to see the progress or 
 to kill the backend if needed (assuming you are running the application locally).
+
+![img.png](ForReadme/img_status.png)
 
 ## 2.4. Results Table
 After the scraping process is done, you will start to see the results from each link appear in the table.
@@ -128,6 +129,7 @@ A known issue is that you cannot scroll through the images from a product in the
 as the images are not stored in any database and the table is rendered each time a new product is found.
 The images are actually displayed using the src attribute of an img tag, so they are not stored in memory either.
  
+![img_1.png](ForReadme/img_table.png)
 
 # 3. Installation and Setup
 
