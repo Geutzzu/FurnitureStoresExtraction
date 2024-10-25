@@ -1,44 +1,48 @@
 # Furniture Store Extraction Application
 A tool to extract, display and export data about furniture products from any website, built with Django and React and powered by a fine-tuned RoBERTa model for Named Entity Recognition (NER).
 
-<details>
-  <summary>Table of Contents</summary>
+# Table of Contents
 
-  1. [Presentation of Functionality and Features](#features)
-      1. [Full demonstration for one link and its subpages](#features)
-      2. [How to use](#features)
-      3. [Real-time scraping and inference updates using WebSockets](#features)
-      4. [Results Table](#features)
-  2. [Motivation and Overview](#motivation-and-overview)
-      1. [Task Overview](#task)
-      2. [My approach](#my-approach)
+<details open>
+  <summary><strong>Click to expand or collapse</strong></summary>
 
-  3. [Installation and Setup](#installation-and-setup)
-      1. [Prerequisites and Additional Downloads](#prerequisites-and-additional-downloads)
-      2. [Frontend Setup (React)](#frontend-setup-react)
-      3. [Backend Setup (Django)](#backend-setup-django)
-      4. [Notebooks Setup](#notebooks-setup)
-  
-  4. [Model Development](#model-development)
-      1. [Overview](#overview)
-      2. [Model Architecture](#model-architecture)
-      3. [Data Collection](#data-collection)
-      4. [Training Process](#training-process)
-      5. [Model Choices & Justifications](#model-choices-and-justifications)
-  
-  5. [Backend: Django Server](#backend-django-server)
-      1. [Libraries & Tools](#libraries-and-tools)
-      2. [WebSocket Integration](#websocket-integration)
-      3. [API Endpoints](#api-endpoints)
-  
-  6. [Frontend: React Client](#frontend-react-client)
-      1. [Libraries & Tools](#libraries-and-tools-frontend)
-      2. [UI Design](#ui-design)
-      3. [State Management & WebSocket Communication](#state-management-and-websocket-communication)
-  
-  7. [Future Enhancements](#future-enhancements)
+  1. [Presentation of Functionality and Features](#1-presentation-of-functionality-and-features)
+      - 1.1. [Full demonstration for one link and its subpages](#11-full-demonstration-for-one-link-and-its-subpages)
+      - 1.2. [How to use](#12-how-to-use)
+      - 1.3. [Real-time scraping and inference updates using WebSockets](#13-real-time-scraping-and-inference-updates-using-websockets)
+      - 1.4. [Results Table](#14-results-table)
+      
+  2. [Motivation and Overview](#2-motivation-and-overview)
+      - 2.1. [Task Overview](#21-task-overview)
+      - 2.2. [My approach](#22-my-approach)
+
+  3. [Installation and Setup](#3-installation-and-setup)
+      - 3.1. [Prerequisites and Additional Downloads](#31-prerequisites-and-additional-downloads)
+      - 3.2. [Frontend Setup (React)](#32-frontend-setup-react)
+      - 3.3. [Backend Setup (Django)](#33-backend-setup-django)
+      - 3.4. [Notebooks Setup](#34-notebooks-setup)
+
+  4. [Model Development](#4-model-development)
+      - 4.1. [Overview](#41-overview)
+      - 4.2. [Model Architecture](#42-model-architecture)
+      - 4.3. [Data Collection](#43-data-collection)
+      - 4.4. [Training Process](#44-training-process)
+      - 4.5. [Model Choices & Justifications](#45-model-choices-and-justifications)
+
+  5. [Backend: Django Server](#5-backend-django-server)
+      - 5.1. [Libraries & Tools](#51-libraries-and-tools)
+      - 5.2. [WebSocket Integration](#52-websocket-integration)
+      - 5.3. [API Endpoints](#53-api-endpoints)
+
+  6. [Frontend: React Client](#6-frontend-react-client)
+      - 6.1. [Libraries & Tools](#61-libraries-and-tools-frontend)
+      - 6.2. [UI Design](#62-ui-design)
+      - 6.3. [State Management & WebSocket Communication](#63-state-management-and-websocket-communication)
+
+  7. [Future Enhancements](#7-future-enhancements)
 
 </details>
+
 
 # 1. Presentation of Functionality and Features
 
@@ -97,10 +101,12 @@ The images are actually displayed using the src attribute of an img tag, so they
 This project was build as a solution to a technical challenge for an internship application. Below is an overview of the task:
 ### Task:
 - Create a new model that is able to extract products from Furniture Stores.
-- #### Inputs:
+
+
+- Inputs:
   - A list of URLs from furniture store sites. Most will have products on them, some won’t, some won’t even work at all.
   - The URLs are given inside a CSV file (present in my repo as `furniture stores pages.csv`).
-- #### Outputs:
+- Outputs:
   - A list of product names extracted from every URL alongside other relevant information or insights.
 
 
@@ -222,7 +228,7 @@ you can install them using the following command from that same directory:
 - NOTE: I did experience some issues using the `requirements.txt` file in pycharm due to the kernel
 not being able to find the dependencies (although when checking for them via the terminal they are there). 
 This did not bother me personally much since pycharm allows you to install
-dependencies directly from the IDE. If installing through the IDE did not work, pip installing them manually in
+dependencies directly from the IDE. If installing through the IDE does not work, pip installing them manually in
 your project should work just fine.
 
 
