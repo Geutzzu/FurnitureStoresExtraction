@@ -303,9 +303,13 @@ I am referring to pages that feature one main product on them and not multiple o
 - That exact same product name will also be located in the `<title>` tag of the page.
 
 Here is an example taken from a random link from the initial CSV:
+
 ![img_3.png](ForReadme/img_33.png)
+
 ![img.png](ForReadme/img_coco.png)
+
 ![img_1.png](ForReadme/img_11.png)
+
 ![img_2.png](ForReadme/img_22.png)
 
 This holds true for most of the websites that I have seen. Seeing that the information I am looking 
