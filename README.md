@@ -86,6 +86,8 @@ and a lot of information that is either hard to come by online, or even non-exis
 
 ## 2.1. Full demonstration for one link and its subpages
 
+![Dem.gif](ForReadme%2FDem.gif)
+
 ## 2.2. How to use
 A short guide on how to use the application is also present in dropdown menu of the user interface.
 In short, you can:
