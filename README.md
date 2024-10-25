@@ -311,7 +311,7 @@ Here is an example taken from a random link from the initial CSV:
 
 ![img_2.png](ForReadme/img_22.png)
 
-This holds true for most of the websites that I have seen. Seeing that the information I am looking 
+This holds true for most of the websites present in the dataset. Seeing that the information I am looking 
 for (the product name) is present most of the time in these places I have decided to scrape from each link just that:
 URL last path, title and h1 tag. 
 
