@@ -1,5 +1,9 @@
 # Furniture Store Extraction Application
-A tool to extract, display and export data about furniture products from any website, built with Django and React and powered by a fine-tuned RoBERTa model for Named Entity Recognition (NER).
+
+A tool for extracting, displaying, and exporting furniture
+product data from any website, built using Django and React. It’s powered 
+by a fine-tuned RoBERTa model for Named Entity Recognition (NER), 
+with an automated pipeline for data collection and annotation.
 
 # Table of Contents
 
@@ -28,7 +32,7 @@ A tool to extract, display and export data about furniture products from any web
            - 4.2.1. [Links Extraction](#421-links-extraction-1_links_for_trainingjpynb)
            - 4.2.2. [Raw Data Extraction](#422-raw-data-extraction-2_data_for_trainingjpynb)
            - 4.2.3. [Labeling and Filtering](#423-labeling-and-filtering-3_labeling_and_filteringjpynb)
-      - 4.3. [Model Architecture](#42-model-architecture) 
+      - 4.3. [Model Architecture](#43-model-architecture)
            - 4.3.1. [Transformer architecture](#431-transformer-architecture)
            - 4.3.2. [BERT and RoBERTa](#432-bert-and-roberta)
            - 4.3.3. [Observations and Takeaways](#433-observations-and-takeaways)
@@ -38,16 +42,16 @@ A tool to extract, display and export data about furniture products from any web
   5. [Backend: Django Server](#5-backend-django-server)
       - 5.1. [Scraping](#51-scraping)
       - 5.2. [Inference](#52-inference)
-      - 5.2. [WebSocket Integration and Status Updates](#52-websocket-integration-and-status-updates)
-      - 5.3. [API Endpoint](#53-api-endpoint)
+      - 5.3. [WebSocket Integration and Status Updates](#53-websocket-integration-and-status-updates)
+      - 5.4. [API Endpoint](#54-api-endpoint)
 
   6. [Frontend: React Client](#6-frontend-react-client)
-      - 6.1. [Libraries & Tools](#61-libraries-and-tools-frontend)
+      - 6.1. [Libraries and Tools](#61-libraries-and-tools)
       - 6.2. [React Components and UI Design](#62-react-components-and-ui-design)
-      - 6.3. [State Management & WebSocket Communication](#63-state-management-and-websocket-communication)
+      - 6.3. [State Management and WebSocket Communication](#63-state-management-and-websocket-communication)
 
   7. [Possible Future Enhancements](#7-possible-future-enhancements)
-      - 7.1. [Model Enhancements](#71-improving-the-model)
+      - 7.1. [Model Enhancements](#71-model-enhancements)
            - 7.1.1. [Hyperparameter Tuning](#711-hyperparameter-tuning)
            - 7.1.2. [Providing More and Cleaner Data](#712-providing-more-and-cleaner-data)
            - 7.1.3. [Adding a CRF Layer](#713-adding-a-crf-layer)
@@ -515,7 +519,7 @@ Reading the paper to see what was used for training can give you a good idea of 
 can prepare your data for fine-tuning.
 
 
-## 4.4. Training Process `train_final.ipynb`:
+## 4.4. Training Process:
 
 Tre training is done inside the `train_final.ipynb` notebook. The code is heavily based on 
 the notebook found in the Huggingface transformers documentation:
@@ -694,9 +698,9 @@ This is all I needed for my intended use case of the app. The rest
 of the backend code is just standard Django structure and logic.
 
 
-# 6. Frontend: React App
+# 6. Frontend: React Client
 
-## 6.1. Libraries & Tools
+## 6.1. Libraries and Tools
 
 This app is built with the following libraries and tools:
 - React for building the user interface.
@@ -714,7 +718,7 @@ The app features 5 main compoenents:
 
 The design can be seen in the demonstration at the beginning of the README.
 
-## 6.3. State Management & WebSocket Communication
+## 6.3. State Management and WebSocket Communication
 
 The most relevant part of the frontend code is how I am handling the WebSocket communication.
 ```js
