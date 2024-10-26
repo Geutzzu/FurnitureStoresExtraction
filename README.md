@@ -366,10 +366,9 @@ provided, I think I did a good job at making the most out of it.
 
 #### 2. Training entry format
 Token entries will look like this:
-    ![img.png](ForReadme/img_dataentry.png)
-
+    ![img_3.png](ForReadme%2Fimg_3.png)
 Label entries will look like this:
-    ![img_1.png](ForReadme/img_dataentry_2.png)
+    ![img_4.png](ForReadme%2Fimg_4.png)
 
 Why this format you may ask ? This is the format that made the most logical sense
 to me in order to condense all the relevant information about the product names of a website
@@ -398,7 +397,8 @@ similarity_threshold = 80
 # consider the page_text, h1_tag_positions, title and url_last_path as given in this snippet"
 tokens, labels = tokenize_and_label(page_text, h1_tag_positions, title, url_last_path, tokens_left=tokens_left, tokens_right=tokens_right, similarity_threshold=similarity_threshold)
 ```
-These parameters can safely be changed to satisfy model needs. I have experimented
+These parameters can safely be changed to satisfy model needs, give more context etc. 
+I have experimented
 with a couple of values but not too many since training takes a considerable amount
 of time on such a large dataset.
 
