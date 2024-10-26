@@ -485,7 +485,12 @@ for model performance and removed it for their training.
 On top of all of this RoBERTa was trained using more data, for longer, and with slightly
 modified hyperparameters.
 
-### 4.3.3 Observations and Takeaways:
+FUN FACT: Here is an attempt of me drawing in paint how the model works for my data
+(I apologize for my paint skills I really tried my best):
+
+![img_6.png](ForReadme%2Fimg_6.png)
+
+### 4.3.3. Observations and Takeaways:
 - My token sequences do not really contain 
 sentences since I joined the html tags via a space. This means that the NSP task
 was probably irrelevant for my task if not even damaging to the model performance (since
@@ -500,3 +505,6 @@ that is as capable as possible.
 contained english sentences and punctuation, your fine-tuning data should contain the same.
 Reading the paper to see what was used for training can give you a good idea of how you
 can prepare your data for fine-tuning.
+
+
+## 4.4. Training Process `train_final.ipynb`:
