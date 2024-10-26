@@ -361,6 +361,7 @@ related (I did also include some plural forms of wanted words, so I don't get pa
 a collections page etc.). Worth noting is that I can afford to lose data here so I can get as many
 correctly annotated examples as possible. Also worth noting is that anyone can add or remove
 words from this list to better suit the needs of their own dataset.
+
     ```py
     BAD_TEXT_PATTERNS_IN_TITLE = ['releases', 'products', 'product', 'collections', 'collection', 'item', 'personalization', 'personalize', 'personalized', 'customize', 'customized', 'customise', 'customised', 'shop', 'store', 'stores', 'home', 'page', 'pages', 'about', 'contact', 'contact us', 'contact me', 'contact info', 'furniture', 'sofas', 'chairs', 'armchairs', 'ottomans', 'furniture' 'gift', 'card', 'search' ] #  all generic names that would indicate that the h1 tag does not contain a product - we can afford to lose a few products in the dataset
     ```
