@@ -485,7 +485,8 @@ for model performance and removed it for their training.
 On top of all of this RoBERTa was trained using more data, for longer, and with slightly
 modified hyperparameters.
 
-FUN FACT: Here is an attempt of me drawing in paint how the model works for my data
+### FUN FACT:
+Here is an attempt of me drawing in paint how the model works for my data
 (I apologize for my paint skills I really tried my best):
 
 ![img_6.png](ForReadme%2Fimg_6.png)
