@@ -46,7 +46,8 @@ A tool to extract, display and export data about furniture products from any web
       - 6.2. [React Components and UI Design](#62-react-components-and-ui-design)
       - 6.3. [State Management & WebSocket Communication](#63-state-management-and-websocket-communication)
 
-  7. [Future Enhancements](#7-future-enhancements)
+  7. [Possible Future Enhancements](#7-possible-future-enhancements)
+      - 7.1. [Model Enhancements](#71-improving-the-model)
 
 </details>
 
@@ -776,5 +777,64 @@ use them to render the proper UI elements.
 - All icons in my app are SVGs made using GPT-4o (he is actually good at this).
 - The one image I use as a placeholder for the product images is a random image from the internet.
 
-# 7. Future Enhancements
+# 7. Possible Future Enhancements
 
+## 7.1. Model Enhancements
+
+### 7.1.1. Hyperparameter Tuning
+
+The first and simplest way to improve the model performance is by tuning both
+the CSV preprocessing parameters and the model hyperparameters. I did not have the time and
+resources to try out that many different combinations in terms of batch size, learning rate, number of epochs,
+fuzzy matching threshold, number of tokens left and right of the h1 tag, pre-trained models etc.
+
+My solution allows for easy tweaking and improvements in all areas of the model, from data gathering
+to model training.
+
+### 7.1.2. Providing More and Cleaner Data
+Some improvements in my data gathering approach could be made to improve the model performance.
+Examples of this are:
+- Stricter filtering for bad data entries.
+- More diversity in the website structures that the model is trained on.
+
+NOTE: My model has been trained to only understand the structure of a product page
+and not a collections page. It might struggle when such a layout is not provided. 
+This is because this was the easiest way to get the most
+data and the most correct data using my heuristic approach.
+
+
+### 7.1.3. Adding a CRF Layer
+
+Another possible enhancement has to do with the models tendency to neglect the correct
+ordering of labels. After switching to RoBERTa though, this problem was less prevalent (in
+the sense that I could not find isolated examples of this happening), so maybe just better
+model performance is enough to fix this issue. 
+Nevertheless, here are some examples that explain the problem better:
+- Let's say the model predicts the following sequence (with not sub-tokens):
+  - `O B-PRODUCT I-PRODUCT O O O O O I-PRODUCT I-PRODUCT I-PRODUCT`
+- Such an output is not possible since the model should not predict an `I-PRODUCT` tag after an `O` tag.
+- The probability for each tag indicates that the model is not sure about the position of
+the first `B-PRODUCT` and some subsequent `I-PRODUCT` tags. The probabilites for such a token 
+probably look something like this:
+    - `O: 0.7, B-PRODUCT: 0.2, I-PRODUCT: 0.1`
+- It still thinks that the token should be a `B-PRODUCT` tag, but it is not sure enough to make 
+the prediction. 
+- This is where a CRF layer can help. The exact probabilites that I just mentioned in my example
+are fed to an additional CRF layer (Conditional Random Field) that will learn
+the relationships between the tags and will make the prediction that makes the most sense.
+- A very short explanation of how a CRF layer works on top of a BiLSTM model can be found 
+[here](https://createmomo.github.io/2017/09/12/CRF_Layer_on_the_Top_of_BiLSTM_1/). Although
+the example is for a BiLSTM model, the same principle can be applied to a transformer model
+  (and I have seen people online suggesting this approach for transformer models).
+
+An important final note is that I am quite positive that this problem can be fixed with
+just better model performance gathered from hyperparameter tuning and more data. This is the 
+trend that I noticed when jumping from DistilBERT to RoBERTa, so I do think it would continue since
+transformers are way more powerful than BiLSTM models.
+
+### 7.1.4. Model for Price and Image Extraction
+One step further would be to train a model that can extract the price and images of a product
+and correlate them with the product name. 
+
+I heard some cool things about Multimodal Transformers and how they can be used for such tasks,
+but this topic is just out of my reach at this moment.
