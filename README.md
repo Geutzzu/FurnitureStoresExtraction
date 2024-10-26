@@ -23,8 +23,11 @@ A tool to extract, display and export data about furniture products from any web
       - 3.4. [Notebooks Setup](#34-notebooks-setup)
 
   4. [Model Development](#4-model-development)
-      - 4.1. [Approach Overview](#41-approach-overview)
-      - 4.2. [Data Collection](#43-data-collection)
+       - 4.1. [Approach Overview and Initial Challenges](#41-approach-overview-and-initial-challenges)
+       - 4.2. [Data Collection and Preprocessing](#42-data-collection-and-preprocessing)
+           - 4.2.1. [Links Extraction](#421-links-extraction-1_links_for_trainingjpynb)
+           - 4.2.2. [Raw Data Extraction](#422-raw-data-extraction-2_data_for_trainingjpynb)
+           - 4.2.3. [Labeling and Filtering](#423-labeling-and-filtering-3_labeling_and_filteringjpynb)
       - 4.3. [Model Architecture](#42-model-architecture) 
       - 4.4. [Training Process](#44-training-process)
       - 4.5. [Model Choices & Justifications](#45-model-choices-and-justifications)
@@ -266,7 +269,7 @@ since the notebooks themselves contain their own share of comments and explanati
 
 Data collection and preprocessing were done in the 3 notebooks inside the `DataPreprocessingNotebooks` directory.
 
-### 1. Links Extraction `1_links_for_training.jpynb`:
+### 4.2.1. Links Extraction `1_links_for_training.jpynb`:
 The goal with this notebook was to get as many links as possible that (most likely) contain products.
 No content gathered from this step, just the links.
 
@@ -289,7 +292,7 @@ The final CSV is called `dispersed_link_data.csv` and below is a Google Drive li
 
 ![img.png](ForReadme/img_ecel.png)
 
-### 2. Raw Data Extraction `2_data_for_training.jpynb`:
+### 4.2.2. Raw Data Extraction `2_data_for_training.jpynb`:
 This aims to get the raw data from all the links gathered in the previous step. 
 
 This is also the right moment to explain the structure of the data that I will feed to the model
@@ -334,4 +337,77 @@ This CSV is rather huge, and computing it took me a few hours (due to the overhe
 and even that is very large. The size also comes from the fact that I stored the entire text from the pages
 (minus some tags that I removed).
 
-### 3. Labeling and Filtering `3_labeling_and_filtering.jpynb`:
+### 4.2.3. Labeling and Filtering `3_labeling_and_filtering.jpynb`:
+This is the final data preprocessing notebook. It filters and annotates the raw data from the CSV
+created in the previous step. 
+
+#### 1. Filtering for bad data entries:
+- I check if the title (h1 tag content in this context and not the actual title html tag) contains any words that are likely to indicate that the title is not furniture
+related (I did also include some plural forms of wanted words, so I don't get pages with multiple products like
+a collections page etc.). Worth noting is that I can afford to lose data here so I can get as many
+correctly annotated examples as possible. Also worth noting is that anyone can add or remove
+words from this list to better suit the needs of their own dataset.
+    ```py
+    BAD_TEXT_PATTERNS_IN_TITLE = ['releases', 'products', 'product', 'collections', 'collection', 'item', 'personalization', 'personalize', 'personalized', 'customize', 'customized', 'customise', 'customised', 'shop', 'store', 'stores', 'home', 'page', 'pages', 'about', 'contact', 'contact us', 'contact me', 'contact info', 'furniture', 'sofas', 'chairs', 'armchairs', 'ottomans', 'furniture' 'gift', 'card', 'search' ] #  all generic names that would indicate that the h1 tag does not contain a product - we can afford to lose a few products in the dataset
+    ```
+- I check for my title to be of length 3 or more since correct product names that have 2 or fewer
+words are rare and more often than not if a title has 2 or fewer words it is not a product name.
+    ```py
+    # finally we remove anything that has a len < 2
+    if len(row[1][0].split()) < 2:
+        continue
+    ```
+Using this basic filtering I reduced the number of unique domains from a little over 300 to
+286 which is still more than enough. Keep in mind that each domain in my context contains 
+thousands if not tens of thousands of links with diverse furniture products. A better way to think
+about the 286 unique domains is that there are 286 unique website structures for my model to learn from.
+If there was any area where my dataset would lack diversity it would be in this area, but with the dataset
+provided, I think I did a good job at making the most out of it.
+
+#### 2. Training entry format
+Token entries will look like this:
+    ![img.png](ForReadme/img_dataentry.png)
+
+Label entries will look like this:
+    ![img_1.png](ForReadme/img_dataentry_2.png)
+
+Why this format you may ask ? This is the format that made the most logical sense
+to me in order to condense all the relevant information about the product names of a website
+in one sequence. They are 
+delimited in the way that they are such that the model can distinguish between
+the sections. More details about this can be found in the notebook itself (such as
+additional special tokens etc.).
+
+
+#### 3. Annotating the data:
+All my training data is annotated in the following way:
+- I use the h1 tag as a reference for the product name (lowercased and with some text cleaning).
+- I search for all the occurrences of that h1 tag in the main `TEXT` section (the body of the page)
+and I annotate them using the `B-PRODUCT` tag for the beginning of the product name and the `I-PRODUCT` tag
+for the rest of the product name (in accordance with the BIO tagging scheme).
+- Optionally, I then search for all subsequences of max length that go over a certain fuzzy match threshold with the h1 tag
+and label them in the same way as described in the last bullet point. I perform this only for
+the `TITLE` section of the page and the `URL` section of the page.
+
+You can tweak the fuzzy matching threshold and the number of 
+tokens left and right of the h1 tag that you want to consider for annotation:
+```py
+tokens_left = 25
+tokens_right = 40
+similarity_threshold = 80
+# consider the page_text, h1_tag_positions, title and url_last_path as given in this snippet"
+tokens, labels = tokenize_and_label(page_text, h1_tag_positions, title, url_last_path, tokens_left=tokens_left, tokens_right=tokens_right, similarity_threshold=similarity_threshold)
+```
+These parameters can safely be changed to satisfy model needs. I have experimented
+with a couple of values but not too many since training takes a considerable amount
+of time on such a large dataset.
+
+Here is a dataset that contains 84591 entries using the parameters written above:
+- [100000_TL25_TR40_ST80.csv](https://drive.google.com/file/d/1I1F8IYhxIlLi4lkPdj1My9TyU2UbqB5h/view?usp=sharing)
+
+This annotation method is not only more efficient for gathering data but also
+very scalable, as anyone can come in and change some parameters, change the data,
+and get even better results that I did. Also, the code is very modular, so anyone
+can come and change how the scraping is done, how the filtering is done, how the annotation
+is done etc. Although not perfect and difficult to get right, I would always choose such an approach over
+manually annotating data.
