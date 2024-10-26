@@ -300,7 +300,7 @@ The final CSV is called `dispersed_link_data.csv` and below is a Google Drive li
 ### 4.2.2. Raw Data Extraction `2_data_for_training.jpynb`:
 This aims to get the raw data from all the links gathered in the previous step. 
 
-This is also the right moment to explain the structure of the data that I will feed to the model
+This is also the right moment to explain the structure of the data that was fed to the model
 and why it's designed like that.
 
 The main thing I noticed about most furniture store websites is that:
