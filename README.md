@@ -509,3 +509,53 @@ can prepare your data for fine-tuning.
 
 
 ## 4.4. Training Process `train_final.ipynb`:
+
+Tre training is done inside the `train_final.ipynb` notebook. The code is heavily based on 
+the notebook found in the Huggingface transformers documentation:
+- [NER Notebook](https://colab.research.google.com/github/huggingface/notebooks/blob/main/examples/token_classification.ipynb#scrollTo=YVx71GdAIrJH)
+
+The code is pretty straightforward and easy to understand. It uses the `Trainer` API from transformers as well
+as `AutoModelForTokenClassification` and `AutoTokenizer`. These provide a very easy and high level way to fine 
+tune models and to test different models without changing the code.
+
+Worth noting are the following:
+- The train test split was done by grouping all data by their domain, and making the split based
+on their domain. This ensures that the model is tested on different web structures and that the
+results are not deceiving.
+- Even with the previous point in mind, the F1 scores may still be a little misleading since all 
+the data is gathered through heuristics and not manually annotated. 
+- The final model was trained with a batch size of 16 for 2 epochs at a learning rate of 2e-5. Adding a larger batch size seemed
+to only decrease performance and anything more than 2 epochs takes way too long to train.
+- I did notice that the model could be under trained since the loss was still decreasing
+at the end of the second epoch (but by a smaller amount). I did not have the time to experiment with
+more epochs and neither the resources to do so (google colab would shut down on me in the free version
+and kaggle annoyed me with their strange way of downloading files).
+- The model tends to not catch the first token of a product name (`B-PRODUCT` tag) as well as leave
+some gaps in the middle of the product name (`I-PRODUCT` tag). One simple measure I took to combat this
+is by adjusting the loss function to value the `B-PRODUCT` tag more than the `I-PRODUCT` tag and the `O` tag.
+    ```py
+    class CustomTrainer(Trainer):
+        def compute_loss(self, model, inputs, return_outputs=False):
+            labels = inputs["labels"]  # keep labels in the input
+            outputs = model(**inputs)
+            logits = outputs.logits
+    
+            # move class weights to the same device as logits
+            device = logits.device
+            class_weights = torch.tensor([0.1, 3.0, 1.0], dtype=torch.float).to(device)
+    
+            # flatten logits and labels
+            logits = logits.view(-1, len(label_map))  # (batch_size * sequence_length, num_labels)
+            labels = labels.view(-1)  # (batch_size * sequence_length)
+    
+            # create the weighted loss function
+            loss_fct = nn.CrossEntropyLoss(weight=class_weights, ignore_index=-100)
+            loss = loss_fct(logits, labels)
+    
+            return (loss, outputs) if return_outputs else loss
+    ```
+- In the evaluation, all this adjustment did was change the ratio between precision and recall from being
+around 1 to 1 (basically equal) to being more like 3 to 4 (in favor of recall). I consider this an
+improvement since I would rather have a model that misses some product names than a model that 
+incorrectly labels a lot of non-product names as product names. There are ways to actually fix this
+issue which I will cover in a later section (Future Enhancements).
