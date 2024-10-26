@@ -29,6 +29,9 @@ A tool to extract, display and export data about furniture products from any web
            - 4.2.2. [Raw Data Extraction](#422-raw-data-extraction-2_data_for_trainingjpynb)
            - 4.2.3. [Labeling and Filtering](#423-labeling-and-filtering-3_labeling_and_filteringjpynb)
       - 4.3. [Model Architecture](#42-model-architecture) 
+           - 4.3.1. [Transformer architecture](#431-transformer-architecture)
+           - 4.3.2. [BERT and RoBERTa](#432-bert-and-roberta)
+           - 4.3.3. [Observations and Takeaways](#433-observations-and-takeaways)
       - 4.4. [Training Process](#44-training-process)
       - 4.5. [Model Choices & Justifications](#45-model-choices-and-justifications)
 
@@ -381,12 +384,12 @@ additional special tokens etc.).
 #### 3. Annotating the data:
 All my training data is annotated in the following way:
 - I use the h1 tag as a reference for the product name (lowercased and with some text cleaning).
-- I search for all the occurrences of that h1 tag in the main `TEXT` section (the body of the page)
+- I search for all the occurrences of that h1 tag in the main `[TEXT]` section (the body of the page)
 and I annotate them using the `B-PRODUCT` tag for the beginning of the product name and the `I-PRODUCT` tag
 for the rest of the product name (in accordance with the BIO tagging scheme).
 - Optionally, I then search for all subsequences of max length that go over a certain fuzzy match threshold with the h1 tag
 and label them in the same way as described in the last bullet point. I perform this only for
-the `TITLE` section of the page and the `URL` section of the page.
+the `[TITLE]` section of the page and the `[URL]` section of the page.
 
 You can tweak the fuzzy matching threshold and the number of 
 tokens left and right of the h1 tag that you want to consider for annotation:
@@ -411,3 +414,89 @@ and get even better results that I did. Also, the code is very modular, so anyon
 can come and change how the scraping is done, how the filtering is done, how the annotation
 is done etc. Although not perfect and difficult to get right, I would always choose such an approach over
 manually annotating data.
+
+## 4.3. Model Architecture
+
+With the data ready for training, you are only left with choosing the right model architecture.
+As suggested by the task, I looked into the transformer architecture and what models
+it offers for NER / what other people have used. 
+
+The "norm" for such tasks is to us e BERT model. There are many pre-trained
+versions of BERT that you can fine-tune for NER (I have seen more than I can count).
+What is important though is to understand how the arhitecture works and why it does so.
+I will go through some important characteristics of BERT that I consider
+relevant for understanding what works for the model and when it does. I will link the relevant
+research papers for BERT and RoBERTa (the model I ended up getting the best results with) below.
+- [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805)
+- [RoBERTa: A Robustly Optimized BERT Pretraining Approach](https://arxiv.org/abs/1907.11692)
+
+### 4.3.1. Transformer architecture
+
+![img_5.png](ForReadme%2Fimg_5.png)
+
+
+In short, the main difference between a GPT model and a BERT model is that BERT
+can take in both the left and right context of a word at the same time. 
+
+In the image above, T1, T2 ... Tn represent the tokens of a given sequence. The tokens
+are all fed through multiple layers of self-attention and feed-forward neural networks
+(the 2 combined are referred to as a transformer block or layer - Trm in the image). 
+
+On a high level, the self-attention mechanism allows the model to understand the context
+of each token by "looking at"  other tokens in the sequence. 
+This means each token can consider other tokens in the input at 
+the same time. This helps the model build understand the relationship
+between words in a sentence and pick up different meanings of the same word
+
+So, with BERT (Bidirectional Encoder Representations from Transformers), 
+it’s able to gather context from both the left and right of any given 
+token in the sequence. This bidirectional approach allows BERT to 
+understand the meaning of each token more fully before making 
+predictions or classifications about it.
+
+GPT models, on the other hand, don’t need this bidirectional 
+context because they’re designed to predict the next word in a
+sequence, so they only need the context from the tokens on the 
+left of the current one. This left-to-right structure is more 
+suited for language generation, which is what GPT models are built for.
+
+E1, E2 ... En represent the embeddings of the tokens after they are passed
+through the transformer layers. They can be then fed into a 
+classification head to make predictions about the tokens (for example predict
+the class of each token in a NER task which is exactly what I need).
+
+### 4.3.2. BERT and RoBERTa
+
+Both models use this bidirectional approach, the difference between them
+being the way they are pre-trained. 
+
+BERT is trained on the following two tasks:
+- Masked Language Model (MLM): randomly mask some tokens in the input and
+- Next Sentence Prediction (NSP): predict if the second sentence follows the first one.
+
+RoBERTa is trained on an improved version of the MLM task where the masking is done
+using dynamic masking (dynamically changing the masking pattern each epoch) instead
+of static masking (the masking is done the same way for each training epoch but with some
+data augmentation).
+
+The interesting thing about RoBERTa is that it considered the NSP task to be irrelevant
+for model performance and removed it for their training. 
+
+On top of all of this RoBERTa was trained using more data, for longer, and with slightly
+modified hyperparameters.
+
+### 4.3.3 Observations and Takeaways:
+- My token sequences do not really contain 
+sentences since I joined the html tags via a space. This means that the NSP task
+was probably irrelevant for my task if not even damaging to the model performance (since
+all the dots in the sequences were coming from html tags and not from delimitation
+of the tags). 
+- Also relevant is the complexity of my task. I consider the task of correctly labeling
+product names from websites to be a complex one. Thus, I think it requires a model
+that is as capable as possible.
+- My best BERT model on the same parameters and dataset got a 0.81 F1 score while RoBERTa got a 
+0.89 F1 score which is a significant improvement.
+- Another important aspect is matching the format of the pre-training data. If the training data
+contained english sentences and punctuation, your fine-tuning data should contain the same.
+Reading the paper to see what was used for training can give you a good idea of how you
+can prepare your data for fine-tuning.
