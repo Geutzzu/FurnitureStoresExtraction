@@ -43,7 +43,7 @@ A tool to extract, display and export data about furniture products from any web
 
   6. [Frontend: React Client](#6-frontend-react-client)
       - 6.1. [Libraries & Tools](#61-libraries-and-tools-frontend)
-      - 6.2. [UI Design](#62-ui-design)
+      - 6.2. [React Components and UI Design](#62-react-components-and-ui-design)
       - 6.3. [State Management & WebSocket Communication](#63-state-management-and-websocket-communication)
 
   7. [Future Enhancements](#7-future-enhancements)
@@ -626,11 +626,155 @@ I did not cheat here):
 - The model does not allways catch the product name correctly in the dataset above, but in this specific
 case, it did not get the right result for product names that were in other languages (the url
 contains the language, so filtering that out would have been simple through the app).
-- There are instances sometimes when the model does not catch the product name correctly. This can be due to many
+- There are instances sometimes when the model generally does not catch the product name correctly. This can be due to many
 reasons such as insufficient training data (in some areas of furniture types), the model not being able to
 catch the first token of a product name, the model not being able to catch the middle of a product name etc.
 - Once again, I will talk about potential solutions to these problems in the Future Enhancements section, 
 but in my eyes, the model performs well enough for the task it was trained on.
 
 ## 5.3. WebSocket Integration and Status Updates
+
+All the logic for the WebSocket communication is done via the `consumers.py` file.
+It contains an extension of the `AsyncWebsocketConsumer` class that handles the connection, disconnection,
+and message sending logic.
+
+There is only one channel that any client can connect to and is not designed
+to have multiple clients connected at the same time. 
+
+One more detail to note is that all the methods need to be async since the WebSocket
+communication is done asynchronously. You will also see the following line of code
+used to yield control back to the event loop:
+```py
+await asyncio.sleep(0.1)
+```
+This is done because multithreading may not yield control back to the event loop.
+
+In rest, the code is pretty straightforward and easy to understand. 
+
+## 5.4. API Endpoint
+The app features a single API endpoint that is used for establishing the WebSocket connection.
+
+The relevant code is present in the `routing.py` file:
+
+```py
+from channels.routing import ProtocolTypeRouter, URLRouter
+from django.core.asgi import get_asgi_application
+from MlBackend.FurnitureFinder import consumers
+from django.urls import path
+
+# we have exactly one route for the websocket in our application
+websocket_urlpatterns = [
+    path('ws/inference/', consumers.InferenceConsumer.as_asgi()),
+]
+
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),  # django’s ASGI application for HTTP requests
+    "websocket": URLRouter(websocket_urlpatterns),  # routes WebSocket connections
+})
+```
+This application is then sent to the `asgi.py` file:
+
+```py
+
+import os
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'MlBackend.settings')
+
+from MlBackend.FurnitureFinder.routing import application
+
+application = application
+```
+This is all I needed for my intended use case of the app. The rest
+of the backend code is just standard Django structure and logic.
+
+
+# 6. Frontend: React App
+
+## 6.1. Libraries & Tools
+
+This app is built with the following libraries and tools:
+- React for building the user interface.
+- Vite for the development server and build tool.
+- Tailwind CSS for styling the app.
+
+## 6.2. React Components and UI Design
+
+The app features 5 main compoenents:
+- ProductApp.jsx - the main component that holds the state of the app, the rest of the components and the logic for the WebSocket connection.
+- ProductTable.jsx - the component that renders the table with the results.
+- InstructionsDropdown.jsx - the component that renders the instructions dropdown when pressed.
+- UrlInput.jsx - the component that renders the input section of the app.
+- Pagination.jsx - the component that provided the pagination for the table.
+
+The design can be seen in the demonstration at the beginning of the README.
+
+## 6.3. State Management & WebSocket Communication
+
+The most relevant part of the frontend code is how I am handling the WebSocket communication.
+```js
+const socket = new WebSocket("ws://" + import.meta.env.VITE_ML_BACKEND_URL + "/ws/inference/");
+    socketRef.current = socket; // store the reference in the ref
+
+    socket.onopen = () => {
+      console.log('WebSocket connection established.');
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.message) { // if the message is a status message
+        setStatusMessage(data.message); // set the status message
+        console.log(data.message);
+        if (data.message.startsWith("Iteration: ")) { // if the message is an iteration message
+          console.log(data.message);
+          const iterationIndex = parseInt(data.message.split(" ")[1]); // we update the current link index
+          const link = data.message.split(" ")[2]; // we get the current link ( by convention the link is the second word in the message )
+          currentLinkIndexRef.current = iterationIndex;
+          setCurrentLink(link);
+        }
+
+        if (data.message.startsWith("Scraping: ")) { // if the message is a scraping status message
+          setScrapingStatus(data.message);
+        }
+
+        if (data.message.startsWith("Inference: ")) { // if the message is an inference status message
+          setInferenceStatus(data.message);
+          console.log(totalNumLinksRef.current, currentLinkIndexRef.current);
+          if (data.message === "Inference: Inference completed." && totalNumLinksRef.current <= currentLinkIndexRef.current) { // if the number of links is equal to the current link index 
+            console.log('Inference completed.');
+            setIsLoading(false);
+          }
+        }
+      } else if (data.product_name && data.link) { // we got data to add to the results
+        setResults((prevResults) => [
+          ...prevResults, // keep the previous results
+          {
+            product_name: data.product_name, // add the product data to the results
+            product_price: data.product_price, // add the product data to the results
+            product_img_urls: data.product_img_urls, // add the product data to the results
+            link: data.link, // add the product data to the results
+          },
+        ]);
+      }
+    };
+```
+
+This is the code snippet that handles just that. It creates a WebSocket connection to the backend
+using the endpoint provided in the `.env` file. (which is left in the repository for demonstration purposes
+since it points to a local server).
+
+It then sets the status for each part of the process (scraping, inference, iteration) and updates the results
+when the model sends them.
+
+Then, all of these states are sent through props to the other components that need them and
+use them to render the proper UI elements.
+
+### NOTES:
+- I did not really focus on the design of the app, but more on the functionality and model development.
+- The design is simple and just enough to make the app usable and not an eyesore.
+- The app is responsive, updates the states properly and does not have any bugs that I am aware of.
+- All icons in my app are SVGs made using GPT-4o (he is actually good at this).
+- The one image I use as a placeholder for the product images is a random image from the internet.
+
+# 7. Future Enhancements
 

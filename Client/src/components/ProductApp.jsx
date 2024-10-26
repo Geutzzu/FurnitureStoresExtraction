@@ -84,7 +84,7 @@ const ProductApp = () => {
         if (data.message.startsWith("Inference: ")) { // if the message is an inference status message
           setInferenceStatus(data.message);
           console.log(totalNumLinksRef.current, currentLinkIndexRef.current);
-          if (data.message === "Inference: Inference completed." && totalNumLinksRef.current <= currentLinkIndexRef.current) {
+          if (data.message === "Inference: Inference completed." && totalNumLinksRef.current <= currentLinkIndexRef.current) { // if the number of links is equal to the current link index
             console.log('Inference completed.');
             setIsLoading(false);
           }
