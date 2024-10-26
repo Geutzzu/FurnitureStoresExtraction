@@ -36,8 +36,8 @@ A tool to extract, display and export data about furniture products from any web
       - 4.5. [Inference](#45-inference)
 
   5. [Backend: Django Server](#5-backend-django-server)
-      - 5.1. [Scraping] (#51-scraping)
-      - 5.2. [Inference] (#52-inference)
+      - 5.1. [Scraping](#51-scraping)
+      - 5.2. [Inference](#52-inference)
       - 5.2. [WebSocket Integration and Status Updates](#52-websocket-integration-and-status-updates)
       - 5.3. [API Endpoint](#53-api-endpoint)
 
@@ -48,6 +48,11 @@ A tool to extract, display and export data about furniture products from any web
 
   7. [Possible Future Enhancements](#7-possible-future-enhancements)
       - 7.1. [Model Enhancements](#71-improving-the-model)
+           - 7.1.1. [Hyperparameter Tuning](#711-hyperparameter-tuning)
+           - 7.1.2. [Providing More and Cleaner Data](#712-providing-more-and-cleaner-data)
+           - 7.1.3. [Adding a CRF Layer](#713-adding-a-crf-layer)
+           - 7.1.4. [Model for Price and Image Extraction](#714-model-for-price-and-image-extraction)
+      - 7.2. [App Improvements](#72-app-improvements)
 
 </details>
 
@@ -304,8 +309,8 @@ This is also the right moment to explain the structure of the data that was fed 
 and why it's designed like that.
 
 The main thing I noticed about most furniture store websites is that:
-- If they have a product name on the page, they will most likely have it in the h1 tag (
-I am referring to pages that feature one main product on them and not multiple ones like a category page).
+- If they have a product name on the page, they will most likely have it in the h1 tag 
+(I am referring to pages that feature one main product on them and not multiple ones like a category page).
 - That exact same product name will most likely be in the url path at the end of the link.
 - That exact same product name will also be located in the `<title>` tag of the page.
 
@@ -838,3 +843,12 @@ and correlate them with the product name.
 
 I heard some cool things about Multimodal Transformers and how they can be used for such tasks,
 but this topic is just out of my reach at this moment.
+
+## 7.2. App Improvements
+
+The one and only improvement that I would make to the app is getting it ready for production.
+One of the reasons I haven't done this is because I don't really know a platform that is free,
+supports such scraping tasks and model usage. The second reason
+is that the multithreading nature of the algorithm is not really suited for a production environment
+as of this moment, and it would need quite a few changes to properly work (like being able
+to kill the scraping process if it takes too long etc.).
