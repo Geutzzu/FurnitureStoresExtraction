@@ -23,7 +23,8 @@ def clean_text(s):
 def has_letters(input_string):
     return any(char.isalpha() for char in input_string)
 
-# this maps  each token to its tag in html
+# this maps each token to its tag in html
+# this is done so I can find the price and the images of the product after the model has predicted the product name from this page
 def soup_mapper(soup, max_tokens=128):
     word_tag_tuples = []
     token_count = 0

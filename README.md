@@ -33,12 +33,13 @@ A tool to extract, display and export data about furniture products from any web
            - 4.3.2. [BERT and RoBERTa](#432-bert-and-roberta)
            - 4.3.3. [Observations and Takeaways](#433-observations-and-takeaways)
       - 4.4. [Training Process](#44-training-process)
-      - 4.5. [Model Choices & Justifications](#45-model-choices-and-justifications)
+      - 4.5. [Inference](#45-inference)
 
   5. [Backend: Django Server](#5-backend-django-server)
-      - 5.1. [Libraries & Tools](#51-libraries-and-tools)
-      - 5.2. [WebSocket Integration](#52-websocket-integration)
-      - 5.3. [API Endpoints](#53-api-endpoints)
+      - 5.1. [Scraping] (#51-scraping)
+      - 5.2. [Inference] (#52-inference)
+      - 5.2. [WebSocket Integration and Status Updates](#52-websocket-integration-and-status-updates)
+      - 5.3. [API Endpoint](#53-api-endpoint)
 
   6. [Frontend: React Client](#6-frontend-react-client)
       - 6.1. [Libraries & Tools](#61-libraries-and-tools-frontend)
@@ -533,6 +534,7 @@ and kaggle annoyed me with their strange way of downloading files).
 - The model tends to not catch the first token of a product name (`B-PRODUCT` tag) as well as leave
 some gaps in the middle of the product name (`I-PRODUCT` tag). One simple measure I took to combat this
 is by adjusting the loss function to value the `B-PRODUCT` tag more than the `I-PRODUCT` tag and the `O` tag.
+
     ```py
     class CustomTrainer(Trainer):
         def compute_loss(self, model, inputs, return_outputs=False):
@@ -559,3 +561,76 @@ around 1 to 1 (basically equal) to being more like 3 to 4 (in favor of recall). 
 improvement since I would rather have a model that misses some product names than a model that 
 incorrectly labels a lot of non-product names as product names. There are ways to actually fix this
 issue which I will cover in a later section (Future Enhancements).
+
+## 4.5. Inference
+
+Model inference will be touched upon in the Django section of this README along with examples of how the model
+performs on real-world data.
+
+# 5. Backend: Django Server
+
+This ML backend was built using Django and Django Channels for WebSocket communication. The backend
+is responsible for handling model inference, scraping and status updates.
+
+## 5.1. Scraping
+The scraping algorithm used in the backend is an adapted version of the one used for gathering the data.
+The so called by me "brute force" approach is used for scraping the links of a website if it's not
+a sitemap. The sitemap approach is used for sitemaps just like in the data collection phase.
+
+The code is present both in the `app_scraping.jpynb` file (where I developed it) and in the `scraping.py` file
+inside the `Scripts` directory of the Django app (which features the final version with async capabilities).
+
+The code is pretty self-explanatory, but I will cover some of the thought process behind it:
+- The script searches for all a tag links that contain the path specified by the user (if any).
+- It recursively searches for links on each subpage it finds (with a limit of 2-3 recursion levels to avoid
+performance issues) and marks them as "Checked" in a dictionary.
+- This is done in a while loop (which basically simulates a DFS search) until there are no more links
+that were not visited.
+- The algorithm is designed to optimize in the event a sitemap is provided in the input.
+- The algorithm also by default ignores pages that are likely to not lead to a product page.
+
+### NOTES: 
+- Although not perfect for finding every sub-link on a website, it can easily be
+tweaked to suit the needs of the user. If the links are stored in javascript for example, the scraping
+algorithm will fail to find them, but changes can be easily made to satisfy such needs of maximizing the
+amount of links found. 
+- The usage of simple libraries like `requests` and `beautifulsoup4` makes the code easy to understand
+and accessible but at the cost of limited capabilities.
+-  As it stands, it can handle very well most websites and by giving it a collections
+page for example it will successfully find the products on that page and not only.
+
+## 5.2. Inference
+The code and further explanations are present in the `app_inference.jpynb` file (where I developed it) and in the `inference.py` file
+inside the `Scripts` directory of the Django app (which features the final version with async capabilities).
+
+This part of the backend is responsible for:
+- Making predictions on a given sequence.
+- Find the price of the prediction it just found (by looking for the first appearance of a currency symbol)
+- Find the images of the product (by looking at the images found before the token where the prediction was made)
+
+### NOTES: 
+- I did consider trying to find the price and images using a model, but the problem with that is that you
+needed a model that could both find prices / images and then correlate them with the product name. I searched
+some information about such models, they do exist, but seem very complex on their own and to implement
+such capabilities to an already complex task and model would prove to be quite the challenge.
+- The rule-based approach I used is not perfect, and honestly, it's mostly there to make the UI and 
+user experience better, but it still provides the correct result most of the time.
+
+### Demonstration of the inference process:
+- Here is a link to a CSV created using the app after running it on an unseen website (I promise
+I did not cheat here):
+  - [products.csv](https://drive.google.com/file/d/1lR-sc3m2rjxphjUmZVTi-p2pxpEhLAf6/view?usp=sharing)
+  
+    ![img_7.png](ForReadme%2Fimg_7.png)
+
+- The model does not allways catch the product name correctly in the dataset above, but in this specific
+case, it did not get the right result for product names that were in other languages (the url
+contains the language, so filtering that out would have been simple through the app).
+- There are instances sometimes when the model does not catch the product name correctly. This can be due to many
+reasons such as insufficient training data (in some areas of furniture types), the model not being able to
+catch the first token of a product name, the model not being able to catch the middle of a product name etc.
+- Once again, I will talk about potential solutions to these problems in the Future Enhancements section, 
+but in my eyes, the model performs well enough for the task it was trained on.
+
+## 5.3. WebSocket Integration and Status Updates
+
