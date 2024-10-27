@@ -2,8 +2,6 @@
 node_modules/
 myenv/
 
-.idea/
-
 # Ignore environment files
 .env
 
