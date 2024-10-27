@@ -57,7 +57,8 @@ with an automated pipeline for data collection and annotation.
            - 7.1.3. [Adding a CRF Layer](#713-adding-a-crf-layer)
            - 7.1.4. [Model for Price and Image Extraction](#714-model-for-price-and-image-extraction)
       - 7.2. [App Improvements](#72-app-improvements)
-
+  8. [Task Output (for the Internship)](#8-task-output-for-the-internship)
+      
 </details>
 
 
@@ -363,7 +364,7 @@ correctly annotated examples as possible. Also worth noting is that anyone can a
 words from this list to better suit the needs of their own dataset.
 
     ```py
-    BAD_TEXT_PATTERNS_IN_TITLE = ['releases', 'products', 'product', 'collections', 'collection', 'item', 'personalization', 'personalize', 'personalized', 'customize', 'customized', 'customise', 'customised', 'shop', 'store', 'stores', 'home', 'page', 'pages', 'about', 'contact', 'contact us', 'contact me', 'contact info', 'furniture', 'sofas', 'chairs', 'armchairs', 'furniture' 'gift', 'card', 'search' ] #  all generic names that would indicate that the h1 tag does not contain a product - we can afford to lose a few products in the dataset
+    BAD_TEXT_PATTERNS_IN_TITLE = ['sale', 'releases', 'products', 'product', 'collections', 'collection', 'item', 'personalization', 'personalize', 'personalized', 'customize', 'customized', 'customise', 'customised', 'shop', 'store', 'stores', 'home', 'page', 'pages', 'about', 'contact', 'contact us', 'contact me', 'contact info', 'furniture', 'sofas', 'chairs', 'armchairs', 'furniture', 'gift', 'card', 'search' ] #  all generic names that would indicate that the h1 tag does not contain a product - we can afford to lose a few products in the dataset
     ```
 - I check for my title to be of length 3 or more since correct product names that have two or fewer
 words are rare and more often than not if a title has two or fewer words, it is not a product name.
@@ -385,7 +386,7 @@ Token entries will look like this:
 Label entries will look like this:
     ![img_4.png](ForReadme%2Fimg_4.png)
 
-Why this format you may ask ? This is the format that made the most logical sense
+Why this format you may ask? This is the format that made the most logical sense
 to me in order to condense all the relevant information about the product names of a website
 in one sequence. They are 
 delimited in the way that they are such that the model can distinguish between
@@ -619,6 +620,83 @@ This part of the backend is responsible for:
 - Making predictions on a given sequence.
 - Find the price of the prediction it just found (by looking for the first appearance of a currency symbol)
 - Find the images of the product (by looking at the images found before the token where the prediction was made)
+
+There is one section I want to talk about specifically, and that is how I choose
+the final product name to be displayed in my app. 
+
+Obviously, the model returns a list of labels for each token in the sequence. The code responsible
+for handling what the app displays is the following:
+```py
+def inference_on_link(link):
+    word_tag_tuples, title, url_last_path, soup = link_content(link)
+    if word_tag_tuples is None:
+        return None, None, None, link
+
+    input, word_tag_tuples = formated_link_content(word_tag_tuples, title,
+                                                   url_last_path)  # this contains the [TEXT] tokens as tuples
+
+    labels = predict_labels(input, model, tokenizer, label_list)
+
+    # slicing in order to get the 3 parts of the input
+    url_tokens, url_labels = input[1:input.index('[URL]')], labels[1:input.index('[URL]')]
+    title_tokens, title_labels = input[input.index('[TITLE]') + 1:input.index('[TEXT]') - 1], labels[input.index('[TITLE]') + 1:input.index('[TEXT]') - 1]
+    text_tokens, text_labels = input[input.index('[TEXT]') + 1: len(input) - 1], labels[input.index('[TEXT]') + 1: len(input) - 1]  
+
+    url_start, url_end = find_product_indices(url_tokens, url_labels)
+    title_start, title_end = find_product_indices(title_tokens, title_labels)
+    text_start, text_end = find_product_indices(text_tokens, text_labels)
+
+    if text_start is not None:
+        product_tag = word_tag_tuples[text_start][1]  # the tag of the first token of the product name
+        product_name = ' '.join([token for token in text_tokens[text_start:text_end + 1]])  # the product name
+        product_price = find_currency_tag(product_tag)  # the tag of the first token of the price
+        product_img = find_img_tag(product_tag)  # the tag of the first token of the image - actually a list of image sources
+        product_price, product_img = product_price.get_text() if product_price else None, product_img if product_img else None  # the price and images
+        return product_name, product_price, product_img, link  # return the product name, price, images and link
+    elif title_start is not None:  # if the product name is in the title and not in the text, the result may actually be easier to find here, since there is less room for error
+        product_name = ' '.join([token for token in title_tokens[title_start:title_end + 1]])
+        return product_name, None, None, link
+    elif url_start is not None:  # if the product name is in the url, same as with the title
+        product_name = ' '.join([token for token in url_tokens[url_start:url_end + 1]])
+        return product_name, None, None, link
+    return None, None, None, link # return just the link if the product name is not found (in the frontend you don't want to display the link if there is no product name)
+    # at least as I coded it, if you want to see what it missed, this can be changed
+```
+
+Notice how I first check for the product name in the `[TEXT]`. Even though this is the most correct
+and fair way to do it, you could notice better results if you check for the product name in the `[TITLE]`
+first since there is way less room for error there. The same goes for the `[URL]` section.
+
+If you do that, you can then find the price and title by looking for the occurrences 
+only if you also found the product name in the `[TEXT]` section.
+
+An implementation that does just that is:
+```py
+# ... rest of the code
+if text_start is not None:
+    product_tag = word_tag_tuples[text_start][1]
+    if title_start is not None: # the title is more likely to be the product name correctly
+        product_name = ' '.join([token for token in title_tokens[title_start:title_end + 1]])
+    elif url_start is not None: # the url is more likely to be the product name correctly than the text tokens
+        product_name = ' '.join([token for token in url_tokens[url_start:url_end + 1]])
+    else:
+        product_name = ' '.join([token for token in text_tokens[text_start:text_end + 1]])
+    product_price = find_currency_tag(product_tag)
+    product_img = find_img_tag(product_tag)
+    product_price, product_img = product_price.get_text() if product_price else None, product_img if product_img else None
+    return product_name, product_price, product_img, link
+elif title_start is not None:
+    product_name = ' '.join([token for token in title_tokens[title_start:title_end + 1])
+    return product_name, None, None, link
+elif url_start is not None:
+    product_name = ' '.join([token for token in url_tokens[url_start:url_end + 1])
+    return product_name, None, None, link
+return None, None, None, link
+
+```
+
+This way you get the `[TITLE]` and `[URL]` sections to help you find the product name 
+and also get prices and images if the product name is found in the `[TEXT]` section.
 
 ### NOTES: 
 - I did consider trying to find the price and images using a model, but the problem with that is that you
@@ -858,3 +936,27 @@ supports such scraping tasks and model usage. The second reason
 is that the multithreading nature of the algorithm is not really suited for a production environment
 as of this moment, and it would need quite a few changes to properly work (like being able
 to kill the scraping process if it takes too long, etc.).
+
+
+# 8. Task Output (for the Internship):
+
+If you want to see the output for the task, well, you can just plug in the CSV and 
+see what it outputs. I have done so myself, but the results are not impressive whatsoever.
+Here are a couple of reasons as to why:
+
+- Most links found in the CSV have been either taken down or are not working anymore (just the bare
+link given and not the actual domain).
+- The model is trained to understand the structure of a product page and not a collections page.
+For all the collections pages provided in the dataset, it will not perform as well.
+- Since the model itself is not perfect, it may catch some false positives such as Gift Card. The scraping
+algorithm provided in the app is designed to ignore such pages, and thus complement this weakness,
+but the model may fail from time to time to catch such cases.
+
+Here is a link to what it outputs for me for all 705 links with no subpage scraping:
+- [task_output.csv](https://drive.google.com/file/d/1D5fmaMPf2JTPGPC7V8A_WdOHUXUhkCZd/view?usp=sharing)
+
+In my eyes, the task output is really not a good indicator of the app capabilities considering
+my approach and the models strengths. Given a CSV of actual product pages that have not been taken down, 
+the results would be much better (I promise). You could even give a few collection pages that you let
+the app scrape and see how it performs on those. The scraping algorithm is there to help the model
+on this exact limitation.

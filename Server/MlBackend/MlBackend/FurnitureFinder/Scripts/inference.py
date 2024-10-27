@@ -48,7 +48,7 @@ def link_content(link):
 
     soup = BeautifulSoup(html_data, "html.parser")
 
-    # finding the title in the meta tags
+    # finding the title in the head of the HTML
     title = soup.find('title')
     if title:
         title = title.get_text()
@@ -92,6 +92,7 @@ def formated_link_content(word_tag_tuples, title, url_last_path):
     return formated_model_input, cleaned_word_tag_tuples
 
 
+# method for predicting the labels of the tokens
 def predict_labels(text, model, tokenizer, label_list, max_length=512):
     inputs = tokenizer(text, return_tensors="pt", max_length=max_length, truncation=True, is_split_into_words=True)
     word_ids = inputs.word_ids()
@@ -114,10 +115,9 @@ def predict_labels(text, model, tokenizer, label_list, max_length=512):
 
     return labels
 
-
-# methods for rule based price and image extraction (after finding the product name)
+# methods for rule-based price and image extraction (after finding the product name)
 def contains_currency(tag):
-    currency_symbols = ['$', '€', '£', '¥', '₹', '₽', '₩', '₪', 'RON' ]
+    currency_symbols = ['$', '€', '£', '¥', '₹', '₽', '₩', '₪', 'RON', 'USD', 'EUR'] # add more...
     if tag and tag.string:
         text = tag.string
         for symbol in currency_symbols:
@@ -125,7 +125,7 @@ def contains_currency(tag):
                 return True
     return False
 
-
+# finds the first currency tag in the soup
 def find_currency_tag(start_tag):
     if contains_currency(start_tag):
         return start_tag
@@ -149,7 +149,6 @@ def find_img_tag(start_tag):
 
     if previous_img:
         while (previous_img.get('class') == previous_img_class) or previous_img_class is None:
-            # check if 'src' attribute exists before appending
             img_src = previous_img.get('src')
             if img_src:
                 img_srcs.append(img_src)
@@ -159,7 +158,6 @@ def find_img_tag(start_tag):
         return img_srcs
     elif next_img:
         while (next_img.get('class') == next_img_class) or next_img_class is None:
-            # check if 'src' attribute exists before appending
             img_src = next_img.get('src')
             if img_src:
                 img_srcs.append(img_src)
@@ -170,6 +168,7 @@ def find_img_tag(start_tag):
     return None
 
 
+# takes a sequence of tokens and labels of equal length and returns the start and end index of the product name if found
 def find_product_indices(tokens, labels):
     if len(tokens) != len(labels):
         raise ValueError("The length of tokens and labels must be the same.")
@@ -197,9 +196,10 @@ def inference_on_link(link):
 
     labels = predict_labels(input, model, tokenizer, label_list)
 
+    # slicing in order to get the 3 parts of the input
     url_tokens, url_labels = input[1:input.index('[URL]')], labels[1:input.index('[URL]')]
-    title_tokens, title_labels = input[input.index('[TITLE]') + 1:input.index('[TEXT]')], labels[input.index(
-        '[TITLE]') + 1:input.index('[TEXT]')]
+    title_tokens, title_labels = input[input.index('[TITLE]') + 1:input.index('[TEXT]') - 1], labels[input.index(
+        '[TITLE]') + 1:input.index('[TEXT]') - 1]
     text_tokens, text_labels = input[input.index('[TEXT]') + 1: len(input) - 1], labels[input.index('[TEXT]') + 1: len(
         input) - 1]  # !!!
 
@@ -208,19 +208,20 @@ def inference_on_link(link):
     text_start, text_end = find_product_indices(text_tokens, text_labels)
 
     if text_start is not None:
-        product_tag = word_tag_tuples[text_start][1]
-        product_name = ' '.join([token for token in text_tokens[text_start:text_end + 1]])
-        product_price = find_currency_tag(product_tag)
-        product_img = find_img_tag(product_tag)
-        product_price, product_img = product_price.get_text() if product_price else None, product_img if product_img else None
-        return product_name, product_price, product_img, link
-    elif title_start is not None:
-        product_name = title_tokens[title_start:title_end + 1]
+        product_tag = word_tag_tuples[text_start][1]  # the tag of the first token of the product name
+        product_name = ' '.join([token for token in text_tokens[text_start:text_end + 1]])  # the product name
+        product_price = find_currency_tag(product_tag)  # the tag of the first token of the price
+        product_img = find_img_tag(product_tag)  # the tag of the first token of the image - actually a list of image sources
+        product_price, product_img = product_price.get_text() if product_price else None, product_img if product_img else None  # the price and images
+        return product_name, product_price, product_img, link  # return the product name, price, images and link
+    elif title_start is not None:  # if the product name is in the title and not in the text, the result may actually be easier to find here, since there is less room for error
+        product_name = ' '.join([token for token in title_tokens[title_start:title_end + 1]])
         return product_name, None, None, link
-    elif url_start is not None:
-        product_name = url_tokens[url_start:url_end + 1]
+    elif url_start is not None:  # if the product name is in the url, same as with the title
+        product_name = ' '.join([token for token in url_tokens[url_start:url_end + 1]])
         return product_name, None, None, link
-    return None, None, None, link
+    return None, None, None, link # return just the link if the product name is not found (in the frontend you don't want to display the link if there is no product name)
+    # at least as I coded it, if you want to see what it missed, this can be changed
 
 # inference_on_links... inside consumers.py
 
