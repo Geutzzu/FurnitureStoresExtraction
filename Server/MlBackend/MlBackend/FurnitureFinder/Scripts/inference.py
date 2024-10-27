@@ -113,7 +113,7 @@ def predict_labels(text, model, tokenizer, label_list, max_length=512):
 
     for idx, (token, prediction) in enumerate(zip(tokenized_tokens, predictions)): # assign the predictions to the correct tokens
         original_token_index = word_ids[idx]
-        if original_token_index is not None: # we filter out for the tokens that are not part of the original text (subword tokens or special tokens)
+        if original_token_index is not None: # we filter out for the tokens that are not part of the original text (sub-word tokens or special tokens)
             labels[original_token_index] = prediction
 
     return labels
@@ -148,8 +148,6 @@ def find_img_tag(start_tag):
 
     previous_img_class = previous_img.get('class') if previous_img else None # we search up the page
     next_img_class = next_img.get('class') if next_img else None # down the page
-
-    print(previous_img_class, next_img_class) # this print is left since its only print left for letting you know how the inference is going in the backend
 
     img_srcs = []
 
@@ -197,6 +195,7 @@ def find_product_indices(tokens, labels):
 def inference_on_link(link):
     word_tag_tuples, title, url_last_path, soup = link_content(link)
     if word_tag_tuples is None:
+        print("No HTML content found for the link:", link)
         return None, None, None, link
 
     input, word_tag_tuples = formated_link_content(word_tag_tuples, title,
@@ -221,13 +220,17 @@ def inference_on_link(link):
         product_price = find_currency_tag(product_tag)  # the tag of the first token of the price
         product_img = find_img_tag(product_tag)  # the tag of the first token of the image - actually a list of image sources
         product_price, product_img = product_price.get_text() if product_price else None, product_img if product_img else None  # the price and images
+        print(product_name, product_price, product_img, link)
         return product_name, product_price, product_img, link  # return the product name, price, images and link
     elif title_start is not None:  # if the product name is in the title and not in the text, the result may actually be easier to find here, since there is less room for error
         product_name = ' '.join([token for token in title_tokens[title_start:title_end + 1]])
+        print(product_name, None, None, link)
         return product_name, None, None, link
     elif url_start is not None:  # if the product name is in the url, same as with the title
         product_name = ' '.join([token for token in url_tokens[url_start:url_end + 1]])
+        print(product_name, None, None, link)
         return product_name, None, None, link
+    print(None, None, None, link)
     return None, None, None, link # return just the link if the product name is not found (in the frontend you don't want to display the link if there is no product name)
     # at least as I coded it, if you want to see what it missed, this can be changed
 

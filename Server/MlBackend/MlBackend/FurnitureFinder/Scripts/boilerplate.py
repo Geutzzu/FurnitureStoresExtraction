@@ -17,7 +17,7 @@ def get_data(url):
         response = requests.get(url, headers=headers, timeout=3)
         # handle rate-limiting (HTTP 429) by pausing and retrying
         if response.status_code == 429:
-            time.sleep(random.uniform(4, 8))  # random delay to avoid detection
+            time.sleep(random.uniform(3, 6))  # random delay to avoid detection - you may have to adjust this if you are getting blocked
             return get_data(url)
 
         if response.status_code == 200:

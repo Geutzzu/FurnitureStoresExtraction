@@ -44,7 +44,6 @@ const ProductApp = () => {
   // this will be sent to the ProductTable component as a prop to clear the results
   // its located here since I need multiple components to be able to perform actions accordingly
   const handleClearClick = () => {
-    console.log('Clearing results...');
     setResults([]);
     setIsLoading(false);
     setScrapingStatus('Not started.');
@@ -68,9 +67,7 @@ const ProductApp = () => {
 
       if (data.message) { // if the message is a status message
         setStatusMessage(data.message); // set the status message
-        console.log(data.message);
         if (data.message.startsWith("Iteration: ")) { // if the message is an iteration message
-          console.log(data.message);
           const iterationIndex = parseInt(data.message.split(" ")[1]); // we update the current link index
           const link = data.message.split(" ")[2]; // we get the current link (by convention the link is the second word in the message - see the backend message format)
           currentLinkIndexRef.current = iterationIndex;
@@ -83,9 +80,7 @@ const ProductApp = () => {
 
         if (data.message.startsWith("Inference: ")) { // if the message is an inference status message
           setInferenceStatus(data.message);
-          console.log(totalNumLinksRef.current, currentLinkIndexRef.current);
           if (data.message === "Inference: Inference completed." && totalNumLinksRef.current <= currentLinkIndexRef.current) { // if the number of links is equal to the current link index
-            console.log('Inference completed.');
             setIsLoading(false);
           }
         }

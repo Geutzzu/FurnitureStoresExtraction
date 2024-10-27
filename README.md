@@ -12,9 +12,10 @@ with an automated pipeline for data collection and annotation.
 
   1. [Presentation of Functionality and Features](#1-presentation-of-functionality-and-features)
       - 1.1. [Full demonstration for one link and its subpages](#11-full-demonstration-for-one-link-and-its-subpages)
-      - 1.2. [How to use](#12-how-to-use)
-      - 1.3. [Real-time scraping and inference updates using WebSockets](#13-real-time-scraping-and-inference-updates-using-websockets)
-      - 1.4. [Results Table](#14-results-table)
+      - 1.2. [Other Screenshots](#12-other-screenshots)
+      - 1.3. [How to use](#13-how-to-use)
+      - 1.4. [Real-time scraping and inference updates using WebSockets](#14-real-time-scraping-and-inference-updates-using-websockets)
+      - 1.5. [Results Table](#15-results-table)
       
   2. [Motivation and Overview](#2-motivation-and-overview)
       - 2.1. [Task Overview](#21-task-overview)
@@ -68,7 +69,14 @@ with an automated pipeline for data collection and annotation.
 
 ![Dem.gif](ForReadme%2FDem.gif)
 
-## 1.2. How to use
+
+## 1.2. Other Screenshots
+
+![img_7.png](ForReadme%2Fimg_7.png)
+
+![img_9.png](ForReadme%2Fimg_9.png)
+
+## 1.3. How to use
 A short guide on how to use the application is also present in a dropdown menu of the user interface.
 In short, you can:
 - Paste a link to a furniture store page in the input field or upload a CSV file 
@@ -83,7 +91,7 @@ for contains `/products/` in the URL for example).
 Please note that the application is intended for desktop use only, and the UI is not optimized for other devices.
 Also, the application as it stands is intended for running locally only, and not for deployment on a server.
 
-## 1.3. Real-time scraping and inference updates using WebSockets
+## 1.4. Real-time scraping and inference updates using WebSockets
 Over the course of the process, you can see progress updates in real time through WebSockets.
 
 One thing to note here, is that for scraping pages with a lot of matching links, the progress bar
@@ -95,7 +103,7 @@ to kill the backend if needed (assuming you are running the application locally)
 
 ![img.png](ForReadme/img_status.png)
 
-## 1.4. Results Table
+## 1.5. Results Table
 After the scraping process is done, you will start to see the results from each link appear in the table.
 You can also scroll through all the pages at the same time as new products are being computed and added to the table.
 
