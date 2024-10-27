@@ -59,7 +59,7 @@ with an automated pipeline for data collection and annotation.
            - 7.1.4. [Model for Price and Image Extraction](#714-model-for-price-and-image-extraction)
       - 7.2. [App Improvements](#72-app-improvements)
   8. [Task Output (for the Internship)](#8-task-output-for-the-internship)
-      
+  9. [Other Projects](#9-other-projects)
 </details>
 
 
@@ -968,3 +968,11 @@ the results would be much better (I promise). You could even give a few collecti
 the app scrape and see how it performs on those. The scraping algorithm is there to help the model
 on this exact limitation.
 
+# 9. Other Projects
+ On the same theme of machine learning and software engineering projects, you can check out:
+- [Artificial Neural Network with SFML](https://github.com/Geutzzu/Neural-Network-SFML)
+
+This is a C++ project where I implemented an Artificial Neural Network from scratch
+and used it to demonstrate multi-class classification on a 2D dataset.
+
+I put a lot of work into these projects, and I hope someone finds them interesting or useful.
