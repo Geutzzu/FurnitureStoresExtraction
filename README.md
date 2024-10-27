@@ -77,7 +77,7 @@ all the following options for extraction will apply to all the links in the CSV 
 - If you chose to search the subpages, you can also choose what paths the urls should contain (if what you search
 for contains /products/ in the URL for example).
 - If you entered a sitemap (with the .xml extension), you can choose the XML tag to search for (loc is the most commonly used).
-- After the scraping and inference is done, you can export the data as a CSV file with the click of a button.
+- After the scraping and inference are done, you can export the data as a CSV file with the click of a button.
 
 Please note that the application is intended for desktop use only, and the UI is not optimized for other devices.
 Also, the application as it stands is intended for running locally only, and not for deployment on a server.
@@ -98,7 +98,7 @@ to kill the backend if needed (assuming you are running the application locally)
 After the scraping process is done, you will start to see the results from each link appear in the table.
 You can also scroll through all the pages at the same time as new products are being computed and added to the table.
 
-The table will contain the following collumns:
+The table will contain the following columns:
 - Images scraped from the page where the product was found (using a rule-based approach and not a model).
 - The name of the product found on the page (extracted by the model).
 - The price of the product found on the page (extracted using a rule-based approach).
@@ -329,7 +329,7 @@ Here is an example taken from a random link from the initial CSV:
 ![img_2.png](ForReadme/img_22.png)
 
 This holds true for most of the websites present in the dataset. Seeing that the information I am looking 
-for (the product name) is present most of the time in these places I have decided to scrape from each link just that:
+for (the product name) is present most of the time in these places, I have decided to scrape from each link just that:
 URL last path, title and h1 tag. 
 
 If I can get even just a handful of correctly annotated examples
@@ -365,8 +365,8 @@ words from this list to better suit the needs of their own dataset.
     ```py
     BAD_TEXT_PATTERNS_IN_TITLE = ['releases', 'products', 'product', 'collections', 'collection', 'item', 'personalization', 'personalize', 'personalized', 'customize', 'customized', 'customise', 'customised', 'shop', 'store', 'stores', 'home', 'page', 'pages', 'about', 'contact', 'contact us', 'contact me', 'contact info', 'furniture', 'sofas', 'chairs', 'armchairs', 'ottomans', 'furniture' 'gift', 'card', 'search' ] #  all generic names that would indicate that the h1 tag does not contain a product - we can afford to lose a few products in the dataset
     ```
-- I check for my title to be of length 3 or more since correct product names that have 2 or fewer
-words are rare and more often than not if a title has 2 or fewer words it is not a product name.
+- I check for my title to be of length 3 or more since correct product names that have two or fewer
+words are rare and more often than not if a title has two or fewer words, it is not a product name.
     ```py
     # finally we remove anything that has a len < 2
     if len(row[1][0].split()) < 2:
@@ -376,7 +376,7 @@ Using this basic filtering I reduced the number of unique domains from a little 
 286 which is still more than enough. Keep in mind that each domain in my context contains 
 thousands if not tens of thousands of links with diverse furniture products. A better way to think
 about the 286 unique domains is that there are 286 unique website structures for my model to learn from.
-If there was any area where my dataset would lack diversity it would be in this area, but with the dataset
+If there was any area where my dataset would lack diversity, it would be in this area, but with the dataset
 provided, I think I did a good job at making the most out of it.
 
 #### 2. Training entry format
@@ -454,8 +454,8 @@ In the image above, T1, T2 ... Tn represent the tokens of a given sequence. The 
 are all fed through multiple layers of self-attention and feed-forward neural networks
 (the 2 combined are referred to as a transformer block or layer - Trm in the image). 
 
-On a high level, the self-attention mechanism allows the model to understand the context
-of each token by "looking at"  other tokens in the sequence. 
+At a high level, the self-attention mechanism allows the model to understand the context
+of each token by "looking at" other tokens in the sequence. 
 This means each token can consider other tokens in the input at 
 the same time. This helps the model build understand the relationship
 between words in a sentence and pick up different meanings of the same word
@@ -505,15 +505,15 @@ Here is an attempt of me drawing in paint how the model works for my data
 
 ### 4.3.3. Observations and Takeaways:
 - My token sequences do not really contain 
-sentences since I joined the html tags via a space. This means that the NSP task
+sentences since I joined the HTML tags via a space. This means that the NSP task
 was probably irrelevant for my task if not even damaging to the model performance (since
-all the dots in the sequences were coming from html tags and not from delimitation
+all the dots in the sequences were coming from HTML tags and not from delimitation
 of the tags). 
-- Also relevant is the complexity of my task. I consider the task of correctly labeling
-product names from websites to be a complex one. Thus, I think it requires a model
+- Also, relevant is the complexity of my task. I consider the task of correctly labeling
+product names from websites to be complex. Thus, I think it requires a model
 that is as capable as possible.
 - My best BERT model on the same parameters and dataset got a 0.81 F1 score while RoBERTa got a 
-0.89 F1 score which is a significant improvement.
+0.89 F1 score, which is a significant improvement.
 - Another important aspect is matching the format of the pre-training data. If the training data
 contained english sentences and punctuation, your fine-tuning data should contain the same.
 Reading the paper to see what was used for training can give you a good idea of how you
@@ -522,7 +522,7 @@ can prepare your data for fine-tuning.
 
 ## 4.4. Training Process:
 
-Tre training is done inside the `train_final.ipynb` notebook. The code is heavily based on 
+The training is done inside the `train_final.ipynb` notebook. The code is heavily based on 
 the notebook found in the Huggingface transformers documentation:
 - [NER Notebook](https://colab.research.google.com/github/huggingface/notebooks/blob/main/examples/token_classification.ipynb#scrollTo=YVx71GdAIrJH)
 
@@ -542,7 +542,7 @@ to only decrease performance and anything more than 2 epochs takes way too long 
 at the end of the second epoch (but by a smaller amount). I did not have the time to experiment with
 more epochs and neither the resources to do so (google colab would shut down on me in the free version
 and kaggle annoyed me with their strange way of downloading files).
-- The model tends to not catch the first token of a product name (`B-PRODUCT` tag) as well as leave
+- The model in the early stages tended to not catch the first token of a product name (`B-PRODUCT` tag) as well as leave
 some gaps in the middle of the product name (`I-PRODUCT` tag). One simple measure I took to combat this
 is by adjusting the loss function to value the `B-PRODUCT` tag more than the `I-PRODUCT` tag and the `O` tag.
 
@@ -554,6 +554,7 @@ is by adjusting the loss function to value the `B-PRODUCT` tag more than the `I-
             logits = outputs.logits
     
             # move class weights to the same device as logits
+            # the class weights are [0.1, 3.0, 1.0] for the O, B-PRODUCT, I-PRODUCT tags
             device = logits.device
             class_weights = torch.tensor([0.1, 3.0, 1.0], dtype=torch.float).to(device)
     
@@ -571,7 +572,7 @@ is by adjusting the loss function to value the `B-PRODUCT` tag more than the `I-
 around 1 to 1 (basically equal) to being more like 3 to 4 (in favor of recall). I consider this an
 improvement since I would rather have a model that misses some product names than a model that 
 incorrectly labels a lot of non-product names as product names. There are ways to actually fix this
-issue which I will cover in a later section (Future Enhancements).
+issue that I will cover in a later section (Future Enhancements).
 
 ## 4.5. Inference
 
