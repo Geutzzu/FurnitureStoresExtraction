@@ -68,14 +68,14 @@ with an automated pipeline for data collection and annotation.
 ![Dem.gif](ForReadme%2FDem.gif)
 
 ## 1.2. How to use
-A short guide on how to use the application is also present in dropdown menu of the user interface.
+A short guide on how to use the application is also present in a dropdown menu of the user interface.
 In short, you can:
 - Paste a link to a furniture store page in the input field or upload a CSV file 
 with multiple links present on the first column (note that
 all the following options for extraction will apply to all the links in the CSV file).
 - Choose if you want to search the subpages of the link for products as well.
 - If you chose to search the subpages, you can also choose what paths the urls should contain (if what you search
-for contains /products/ in the URL for example).
+for contains `/products/` in the URL for example).
 - If you entered a sitemap (with the .xml extension), you can choose the XML tag to search for (loc is the most commonly used).
 - After the scraping and inference are done, you can export the data as a CSV file with the click of a button.
 
@@ -115,7 +115,7 @@ The images are actually displayed using the src attribute of an img tag, so they
 
 ## 2.1. Task Overview
 
-This project was build as a solution to a technical challenge for an internship application. Below is an overview of the task:
+This project was built as a solution to a technical challenge for an internship application. Below is an overview of the task:
 ### Task:
 - Create a new model that is able to extract products from Furniture Stores.
 
@@ -183,7 +183,7 @@ that were small enough to be uploaded to GitHub).
      ```bash
      npm run dev
      ```
-- If everything went well you should see the following when running:
+- If everything went well, you should see the following when running:
 ![img.png](ForReadme/img.png)
 
 ## 3.3. Backend Setup (Django)
@@ -211,7 +211,7 @@ that were small enough to be uploaded to GitHub).
      ``` 
 - After this, you will have to create a directory called `Models` (if it does not exist) in the `FurnitureFinder` directory
   (where the django app is located).
-- You can then download one of my trained models from the google drive link below, and add it to the `Models` directory:
+- You can then download one of my trained models from the Google Drive link below, and add it to the `Models` directory:
   - [ROB_0.89F1_16B_100000DAT](https://drive.google.com/drive/folders/1kuXdzfuZpfyJGMZYohPATBuOGeN6lxTz?usp=sharing)
 - For the model above, the app will work plug-and-play. If you want to use a different model, you will have to
 change the model path in the `inference.py` file in the `Scripts` directory inside the django app.
@@ -225,10 +225,10 @@ change the model path in the `inference.py` file in the `Scripts` directory insi
      ````bash
      daphne -p 8000 MlBackend.asgi:application 
      ````
-- If everything went well you should see the following when running:
+- If everything went well, you should see the following when running:
   ![img_1.png](ForReadme/img_1.png)
 - NOTE: The WebSocket connection will not work unless you refresh
-the page after the server is started. If it is connected you will see this:
+the page after the server is started. If it is connected, you will see this:
 ![img_2.png](ForReadme/img_2.png)
 
 ## 3.4. Notebooks Setup
@@ -254,10 +254,10 @@ your project should work just fine.
 ## 4.1. Approach Overview and Initial Challenges
 
 There is one thing I want to state from the start. The most challenging part in this project
-was gathering data and preparing it for training. There are 0 online resources that teach you how to
+was gathering data and preparing it for training. There are zero online resources that teach you how to
 get data and prepare it for training / fine-tuning a model for NER. The one and only approach you will find
 is to manually annotate the data. Now, the problem with this is that I totally refused to 
-manually annotate data. It felt like low-level work that for sure could be automated. Even manually labeling
+manually annotate data. It felt like low-level work that, for sure, could be automated. Even manually labeling
 100 examples felt like a waste of time for me and for little result since 100 labeled examples are 
 probably not enough for such a complex task.
 
@@ -272,10 +272,10 @@ a rabbit hole of learning about web scraping and how I can get the most product 
 from any given website. 
 
 The thought process was that if I have enough data, I can make a rule-based 
-approach where I can get a chunk of it labeled correctly by looking at the html tags and 
+approach where I can get a chunk of it labeled correctly by looking at the HTML tags and 
 common patterns in the website structure.
 
-Below I will go through what drove the decisions for my project notebook by notebook. I may not go into 
+Below, I will go through what drove the decisions for my project notebook by notebook. I may not go into 
 too much detail here
 since the notebooks themselves contain their own share of comments and explanations. 
 
@@ -293,11 +293,11 @@ than recursively searching for a tags. The one problem with this was that not al
 a sitemap. 
 
 My script extracted 443 / 705 sitemaps from the given links, out of which not all were standard, easy to
-scrape, sitemaps, but considering my needs this was way more than enough and I found this soon enough.
+scrape, sitemaps, but considering my needs, this was way more than enough and I found this soon enough.
 
-An early stopped run of my script gave me a dataset that contained ~278000 links out of which a little over 300
+An early-stopped run of my script gave me a dataset that contained ~278,000 links out of which a little over 300
 unique domains (I forgot the exact value at the moment of writing) out of the 705 given. The script was early
-stopped since it was taking too long and that number of ~278000 links was where the algorithm was plateauing
+stopped since it was taking too long, and that number of ~278,000 links was where the algorithm was plateauing
 and not finding any new links.
 
 
@@ -342,7 +342,7 @@ that contain information in just the places I am looking for. I have the luxury 
 
 I can just keep the good data entries in a "greedy" type of way. 
 
-A CSV that contains 100000 entries made using the process described 
+A CSV that contains 100,000 entries made using the process described 
 above can be downloaded from the following link:
 
 - [preprocessed_data_from_all_sitemaps_100000.csv](https://drive.google.com/file/d/1M7PrWwwaTLH2GbFK7qVg8Ci2uZiK3Dba/view?usp=sharing)
@@ -363,7 +363,7 @@ correctly annotated examples as possible. Also worth noting is that anyone can a
 words from this list to better suit the needs of their own dataset.
 
     ```py
-    BAD_TEXT_PATTERNS_IN_TITLE = ['releases', 'products', 'product', 'collections', 'collection', 'item', 'personalization', 'personalize', 'personalized', 'customize', 'customized', 'customise', 'customised', 'shop', 'store', 'stores', 'home', 'page', 'pages', 'about', 'contact', 'contact us', 'contact me', 'contact info', 'furniture', 'sofas', 'chairs', 'armchairs', 'ottomans', 'furniture' 'gift', 'card', 'search' ] #  all generic names that would indicate that the h1 tag does not contain a product - we can afford to lose a few products in the dataset
+    BAD_TEXT_PATTERNS_IN_TITLE = ['releases', 'products', 'product', 'collections', 'collection', 'item', 'personalization', 'personalize', 'personalized', 'customize', 'customized', 'customise', 'customised', 'shop', 'store', 'stores', 'home', 'page', 'pages', 'about', 'contact', 'contact us', 'contact me', 'contact info', 'furniture', 'sofas', 'chairs', 'armchairs', 'furniture' 'gift', 'card', 'search' ] #  all generic names that would indicate that the h1 tag does not contain a product - we can afford to lose a few products in the dataset
     ```
 - I check for my title to be of length 3 or more since correct product names that have two or fewer
 words are rare and more often than not if a title has two or fewer words, it is not a product name.
@@ -372,8 +372,8 @@ words are rare and more often than not if a title has two or fewer words, it is 
     if len(row[1][0].split()) < 2:
         continue
     ```
-Using this basic filtering I reduced the number of unique domains from a little over 300 to
-286 which is still more than enough. Keep in mind that each domain in my context contains 
+Using this basic filtering, I reduced the number of unique domains from a little over 300 to
+ 286, which is still more than enough. Keep in mind that each domain in my context contains 
 thousands if not tens of thousands of links with diverse furniture products. A better way to think
 about the 286 unique domains is that there are 286 unique website structures for my model to learn from.
 If there was any area where my dataset would lack diversity, it would be in this area, but with the dataset
@@ -494,7 +494,7 @@ data augmentation).
 The interesting thing about RoBERTa is that it considered the NSP task to be irrelevant
 for model performance and removed it for their training. 
 
-On top of all of this RoBERTa was trained using more data, for longer, and with slightly
+On top of all of this, RoBERTa was trained using more data, for longer, and with slightly
 modified hyperparameters.
 
 ### FUN FACT:
@@ -540,7 +540,7 @@ the data is gathered through heuristics and not manually annotated.
 to only decrease performance and anything more than 2 epochs takes way too long to train.
 - I did notice that the model could be under trained since the loss was still decreasing
 at the end of the second epoch (but by a smaller amount). I did not have the time to experiment with
-more epochs and neither the resources to do so (google colab would shut down on me in the free version
+more epochs, and neither the resources to do so (Google Colab would shut down on me in the free version
 and kaggle annoyed me with their strange way of downloading files).
 - The model in the early stages tended to not catch the first token of a product name (`B-PRODUCT` tag) as well as leave
 some gaps in the middle of the product name (`I-PRODUCT` tag). One simple measure I took to combat this
@@ -582,7 +582,7 @@ performs on real-world data.
 # 5. Backend: Django Server
 
 This ML backend was built using Django and Django Channels for WebSocket communication. The backend
-is responsible for handling model inference, scraping and status updates.
+is responsible for handling model inference, scraping, and status updates.
 
 ## 5.1. Scraping
 The scraping algorithm used in the backend is an adapted version of the one used for gathering the data.
@@ -603,13 +603,13 @@ that were not visited.
 
 ### NOTES: 
 - Although not perfect for finding every sub-link on a website, it can easily be
-tweaked to suit the needs of the user. If the links are stored in javascript for example, the scraping
+tweaked to suit the needs of the user. If the links are stored in JavaScript for example, the scraping
 algorithm will fail to find them, but changes can be easily made to satisfy such needs of maximizing the
 amount of links found. 
 - The usage of simple libraries like `requests` and `beautifulsoup4` makes the code easy to understand
 and accessible but at the cost of limited capabilities.
--  As it stands, it can handle very well most websites and by giving it a collections
-page for example it will successfully find the products on that page and not only.
+-  As it stands, it can handle very well most websites, and by giving it a collections
+page, for example, it will successfully find the products on that page and not only.
 
 ## 5.2. Inference
 The code and further explanations are present in the `app_inference.jpynb` file (where I developed it) and in the `inference.py` file
@@ -635,12 +635,12 @@ I did not cheat here):
   
     ![img_7.png](ForReadme%2Fimg_7.png)
 
-- The model does not allways catch the product name correctly in the dataset above, but in this specific
+- The model does not always catch the product name correctly in the dataset above, but in this specific
 case, it did not get the right result for product names that were in other languages (the url
 contains the language, so filtering that out would have been simple through the app).
 - There are instances sometimes when the model generally does not catch the product name correctly. This can be due to many
 reasons such as insufficient training data (in some areas of furniture types), the model not being able to
-catch the first token of a product name, the model not being able to catch the middle of a product name etc.
+catch the first token of a product name, the model not being able to catch the middle of a product name, etc.
 - Once again, I will talk about potential solutions to these problems in the Future Enhancements section, 
 but in my eyes, the model performs well enough for the task it was trained on.
 
@@ -664,7 +664,7 @@ This is done because multithreading may not yield control back to the event loop
 In rest, the code is pretty straightforward and easy to understand. 
 
 ## 5.4. API Endpoint
-The app features a single API endpoint that is used for establishing the WebSocket connection.
+The app features a single API endpoint used for establishing the WebSocket connection.
 
 The relevant code is present in the `routing.py` file:
 
@@ -714,7 +714,7 @@ This app is built with the following libraries and tools:
 The app features 5 main compoenents:
 - ProductApp.jsx - the main component that holds the state of the app, the rest of the components and the logic for the WebSocket connection.
 - ProductTable.jsx - the component that renders the table with the results.
-- InstructionsDropdown.jsx - the component that renders the instructions dropdown when pressed.
+- InstructionsDropdown.jsx - the component that renders the instruction dropdown when pressed.
 - UrlInput.jsx - the component that renders the input section of the app.
 - Pagination.jsx - the component that provided the pagination for the table.
 
@@ -797,7 +797,7 @@ use them to render the proper UI elements.
 The first and simplest way to improve the model performance is by tuning both
 the CSV preprocessing parameters and the model hyperparameters. I did not have the time and
 resources to try out that many different combinations in terms of batch size, learning rate, number of epochs,
-fuzzy matching threshold, number of tokens left and right of the h1 tag, pre-trained models etc.
+fuzzy matching threshold, number of tokens left and right of the h1 tag, pre-trained models, etc.
 
 My solution allows for easy tweaking and improvements in all areas of the model, from data gathering
 to model training.
@@ -825,15 +825,15 @@ Nevertheless, here are some examples that explain the problem better:
   - `O B-PRODUCT I-PRODUCT O O O O O I-PRODUCT I-PRODUCT I-PRODUCT`
 - Such an output is not possible since the model should not predict an `I-PRODUCT` tag after an `O` tag.
 - The probability for each tag indicates that the model is not sure about the position of
-the first `B-PRODUCT` and some subsequent `I-PRODUCT` tags. The probabilites for such a token 
+the first `B-PRODUCT` and some subsequent `I-PRODUCT` tags. The probabilities for such a token 
 probably look something like this:
     - `O: 0.7, B-PRODUCT: 0.2, I-PRODUCT: 0.1`
 - It still thinks that the token should be a `B-PRODUCT` tag, but it is not sure enough to make 
 the prediction. 
-- This is where a CRF layer can help. The exact probabilites that I just mentioned in my example
+- This is where a CRF layer can help. The exact probabilities that I just mentioned in my example
 are fed to an additional CRF layer (Conditional Random Field) that will learn
 the relationships between the tags and will make the prediction that makes the most sense.
-- A very short explanation of how a CRF layer works on top of a BiLSTM model can be found 
+- A brief explanation of how a CRF layer works on top of a BiLSTM model can be found 
 [here](https://createmomo.github.io/2017/09/12/CRF_Layer_on_the_Top_of_BiLSTM_1/). Although
 the example is for a BiLSTM model, the same principle can be applied to a transformer model
   (and I have seen people online suggesting this approach for transformer models).
@@ -857,4 +857,4 @@ One of the reasons I haven't done this is because I don't really know a platform
 supports such scraping tasks and model usage. The second reason
 is that the multithreading nature of the algorithm is not really suited for a production environment
 as of this moment, and it would need quite a few changes to properly work (like being able
-to kill the scraping process if it takes too long etc.).
+to kill the scraping process if it takes too long, etc.).
