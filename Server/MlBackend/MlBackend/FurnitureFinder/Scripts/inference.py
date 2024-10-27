@@ -186,6 +186,8 @@ def find_product_indices(tokens, labels):
 
     return None, None
 
+
+# returns the product name, price, images and the link of the page
 def inference_on_link(link):
     word_tag_tuples, title, url_last_path, soup = link_content(link)
     if word_tag_tuples is None:

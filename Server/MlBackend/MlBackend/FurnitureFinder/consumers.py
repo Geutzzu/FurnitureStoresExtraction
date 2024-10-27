@@ -109,7 +109,7 @@ class InferenceConsumer(AsyncWebsocketConsumer):
                 processed_links += 1
 
                 is_sitemap = False
-                if '.xml' in link:
+                if '.xml' in link or '/sitemap' in link: # there are sitemap sublinks that are not XML files - change this if needed
                     is_sitemap = True
 
                 await self.send_status_message("Scraping", "Done 0 iterations. Found 0 links.")

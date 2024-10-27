@@ -627,6 +627,7 @@ the final product name to be displayed in my app.
 Obviously, the model returns a list of labels for each token in the sequence. The code responsible
 for handling what the app displays is the following:
 ```py
+# returns the product name, price, images and the link of the page (in this order)
 def inference_on_link(link):
     word_tag_tuples, title, url_last_path, soup = link_content(link)
     if word_tag_tuples is None:
@@ -670,7 +671,7 @@ first since there is way less room for error there. The same goes for the `[URL]
 If you do that, you can then find the price and title by looking for the occurrences 
 only if you also found the product name in the `[TEXT]` section.
 
-An implementation that does just that is:
+An implementation that does just that is written below:
 ```py
 # ... rest of the code
 if text_start is not None:
@@ -707,18 +708,17 @@ such capabilities to an already complex task and model would prove to be quite t
 user experience better, but it still provides the correct result most of the time.
 
 ### Demonstration of the inference process:
-- Here is a link to a CSV created using the app after running it on an unseen website (I promise
-I did not cheat here):
-  - [products.csv](https://drive.google.com/file/d/1lR-sc3m2rjxphjUmZVTi-p2pxpEhLAf6/view?usp=sharing)
-  
-    ![img_7.png](ForReadme%2Fimg_7.png)
+- Here is a link to a CSV created using the app after running it on an unseen sitemap (I promise
+I did not cheat here and here is the [link](https://www.boconcept.com/en-ro/sitemap/products/)):
+  - [products.csv](https://drive.google.com/file/d/1aUGKtCCQAzcTlpEXqko0WdvGIdayV_Jf/view?usp=sharing)
 
-- The model does not always catch the product name correctly in the dataset above, but in this specific
-case, it did not get the right result for product names that were in other languages (the url
-contains the language, so filtering that out would have been simple through the app).
-- There are instances sometimes when the model generally does not catch the product name correctly. This can be due to many
-reasons such as insufficient training data (in some areas of furniture types), the model not being able to
-catch the first token of a product name, the model not being able to catch the middle of a product name, etc.
+    ![img_8.png](ForReadme%2Fimg_8.png)
+
+- The model caught 99% of the product names correctly with just a few outliers.
+- There are instances sometimes when the model does not catch the product name correctly. 
+This can be due to many
+reasons such as insufficient training data (in some areas of furniture types),
+not being confident enough even though it has an idea of what the product name is, etc.
 - Once again, I will talk about potential solutions to these problems in the Future Enhancements section, 
 but in my eyes, the model performs well enough for the task it was trained on.
 
