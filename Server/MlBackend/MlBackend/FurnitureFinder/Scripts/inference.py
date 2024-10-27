@@ -13,7 +13,7 @@ model_name = model_checkpoint = "MlBackend/FurnitureFinder/Models/ROB_0.89F1_16B
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForTokenClassification.from_pretrained(model_name)
 label_list = ['O', 'B-PRODUCT', 'I-PRODUCT']
-links_file = 'scraped_links.txt'
+links_file = 'scraped_links.txt' # not actually used in the app, I kept this in here in case storing the scraped links is needed in the future
 
 def clean_text(s):
     # this pattern keeps only normal alphanumerical characters and some special symbols
@@ -21,9 +21,10 @@ def clean_text(s):
     return re.sub(allowed_pattern, '', s)
 
 def has_letters(input_string):
+    # helper method for checking if a string contains any letters
     return any(char.isalpha() for char in input_string)
 
-# this maps each token to its tag in html
+# this maps each token to its tag in HTML
 # this is done so I can find the price and the images of the product after the model has predicted the product name from this page
 def soup_mapper(soup, max_tokens=128):
     word_tag_tuples = []
@@ -62,7 +63,7 @@ def link_content(link):
     word_tag_tuples = soup_mapper(soup, max_tokens=128)  # by joining word_tag_tuples[0] you get the full text
 
     url_index = link.rfind('/')
-    url_last_path = link[url_index + 1:].replace('-', ' ').replace('_', ' ')
+    url_last_path = link[url_index + 1:].replace('-', ' ').replace('_', ' ') # the text I am looking for can only be separated by these two characters
 
     if not has_letters(url_last_path):
         url_last_path = None
@@ -70,6 +71,8 @@ def link_content(link):
     return word_tag_tuples, title, url_last_path, soup
 
 
+# one observation about cleaning the text in this method is that its usage is subject to change
+# depending on the website it may do more harm than good
 def formated_link_content(word_tag_tuples, title, url_last_path):
     cleaned_word_tag_tuples = []
 
@@ -98,19 +101,19 @@ def predict_labels(text, model, tokenizer, label_list, max_length=512):
     word_ids = inputs.word_ids()
 
     with torch.no_grad():
-        outputs = model(**inputs)
+        outputs = model(**inputs) # these are the logits or the scores for each token
 
     logits = outputs.logits
     predictions = torch.argmax(logits, dim=2)
 
-    predictions = [label_list[prediction] for prediction in predictions[0]]
-    tokenized_tokens = tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
+    predictions = [label_list[prediction] for prediction in predictions[0]] # convert the predictions to the actual labels
+    tokenized_tokens = tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])  # convert the token ids to the actual tokens
 
-    labels = ['O'] * len(text)
+    labels = ['O'] * len(text) # initialize the labels with 'O'
 
-    for idx, (token, prediction) in enumerate(zip(tokenized_tokens, predictions)):
+    for idx, (token, prediction) in enumerate(zip(tokenized_tokens, predictions)): # assign the predictions to the correct tokens
         original_token_index = word_ids[idx]
-        if original_token_index is not None:
+        if original_token_index is not None: # we filter out for the tokens that are not part of the original text (subword tokens or special tokens)
             labels[original_token_index] = prediction
 
     return labels
@@ -126,6 +129,7 @@ def contains_currency(tag):
     return False
 
 # finds the first currency tag in the soup
+# the currency tag will always be located after the product name (down the page)
 def find_currency_tag(start_tag):
     if contains_currency(start_tag):
         return start_tag
@@ -136,27 +140,29 @@ def find_currency_tag(start_tag):
     return None
 
 
+# finds the img tags before or after the product name (depending on where they first are found)
+# because we know the position of the product (if the model performed well) we can search and hopefully find the correct images
 def find_img_tag(start_tag):
     previous_img = start_tag.find_previous('img')
     next_img = start_tag.find_next('img')
 
-    previous_img_class = previous_img.get('class') if previous_img else None
-    next_img_class = next_img.get('class') if next_img else None
+    previous_img_class = previous_img.get('class') if previous_img else None # we search up the page
+    next_img_class = next_img.get('class') if next_img else None # down the page
 
-    print(previous_img_class, next_img_class)
+    print(previous_img_class, next_img_class) # this print is left since its only print left for letting you know how the inference is going in the backend
 
     img_srcs = []
 
     if previous_img:
-        while (previous_img.get('class') == previous_img_class) or previous_img_class is None:
+        while (previous_img.get('class') == previous_img_class) or previous_img_class is None: # we keep going if there are multiple images with the same class (so we can hopefully get the carousel of product images)
             img_src = previous_img.get('src')
             if img_src:
-                img_srcs.append(img_src)
-            previous_img = previous_img.find_previous('img')
-            if not previous_img:
+                img_srcs.append(img_src) # append the image source to the list if it exists
+            previous_img = previous_img.find_previous('img') # update previous_img
+            if not previous_img: # if we don't find any more images, we break and return the list of image sources
                 break
         return img_srcs
-    elif next_img:
+    elif next_img: # we do the same for the bottom of the page
         while (next_img.get('class') == next_img_class) or next_img_class is None:
             img_src = next_img.get('src')
             if img_src:

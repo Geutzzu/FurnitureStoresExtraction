@@ -259,16 +259,15 @@ was gathering data and preparing it for training. There are zero online resource
 get data and prepare it for training / fine-tuning a model for NER. The one and only approach you will find
 is to manually annotate the data. Now, the problem with this is that I totally refused to 
 manually annotate data. It felt like low-level work that, for sure, could be automated. Even manually labeling
-100 examples felt like a waste of time for me and for little result since 100 labeled examples are 
-probably not enough for such a complex task.
+100 examples felt like a waste of time for me. 
 
 Now, having said that, gathering data in an automated way that is coherent for a complex task like NER
 is very difficult. Conceptually, building an algorithm that can provide
 the dataset for your model would entail that you actually don't need the model in the first place.
 
-One of my initial conclusions was that I needed to make the most out the data I had. I had a dataset
+One of my initial conclusions was that I needed to make the most out of the data I had. I had a dataset
 of 705 furniture store links given for this task (in the `furniture stores pages.csv` file). It would have
-been a total waste not to search for products on all the pages of a given website. So this lead me into
+been a total waste not to search for products on all the pages of a given website. So, this lead me into
 a rabbit hole of learning about web scraping and how I can get the most product links effectively and efficiently
 from any given website. 
 
@@ -594,7 +593,7 @@ The code is present both in the `app_scraping.jpynb` file (where I developed it)
 inside the `Scripts` directory of the Django app (which features the final version with async capabilities).
 
 The code is pretty self-explanatory, but I will cover some of the thought process behind it:
-- The script searches for all a tag links that contain the path specified by the user (if any).
+- The script searches for all `a` tag links that contain the path specified by the user (if any).
 - It recursively searches for links on each subpage it finds (with a limit of 2-3 recursion levels to avoid
 performance issues) and marks them as "Checked" in a dictionary.
 - This is done in a while loop (which basically simulates a DFS search) until there are no more links
@@ -606,7 +605,7 @@ that were not visited.
 - Although not perfect for finding every sub-link on a website, it can easily be
 tweaked to suit the needs of the user. If the links are stored in JavaScript for example, the scraping
 algorithm will fail to find them, but changes can be easily made to satisfy such needs of maximizing the
-amount of links found. 
+number of links found. 
 - The usage of simple libraries like `requests` and `beautifulsoup4` makes the code easy to understand
 and accessible but at the cost of limited capabilities.
 -  As it stands, it can handle very well most websites, and by giving it a collections
@@ -709,7 +708,7 @@ user experience better, but it still provides the correct result most of the tim
 
 ### Demonstration of the inference process:
 - Here is a link to a CSV created using the app after running it on an unseen sitemap (I promise
-I did not cheat here and here is the [link](https://www.boconcept.com/en-ro/sitemap/products/)):
+I did not cheat and here is the [link for the sitemap](https://www.boconcept.com/en-ro/sitemap/products/)):
   - [products.csv](https://drive.google.com/file/d/1aUGKtCCQAzcTlpEXqko0WdvGIdayV_Jf/view?usp=sharing)
 
     ![img_8.png](ForReadme%2Fimg_8.png)
@@ -960,3 +959,4 @@ my approach and the models strengths. Given a CSV of actual product pages that h
 the results would be much better (I promise). You could even give a few collection pages that you let
 the app scrape and see how it performs on those. The scraping algorithm is there to help the model
 on this exact limitation.
+

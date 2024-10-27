@@ -72,7 +72,7 @@ const ProductApp = () => {
         if (data.message.startsWith("Iteration: ")) { // if the message is an iteration message
           console.log(data.message);
           const iterationIndex = parseInt(data.message.split(" ")[1]); // we update the current link index
-          const link = data.message.split(" ")[2]; // we get the current link ( by convention the link is the second word in the message )
+          const link = data.message.split(" ")[2]; // we get the current link (by convention the link is the second word in the message - see the backend message format)
           currentLinkIndexRef.current = iterationIndex;
           setCurrentLink(link);
         }
@@ -125,7 +125,7 @@ const ProductApp = () => {
         <div className="p-4 mt-16 -ml-[30px]">
           {/* loading Section */}
           <div ref={loadingRef} className="mt-4 mb-8">
-            {isLoading && results.length === 0 && ( /// isLoading && only
+            {isLoading && results.length === 0 && ( /// isLoading && only if there are no results
               <div className="flex items-center justify-center space-x-4">
                 <SpinnerIcon className="h-10 w-10 animate-spin" />
                 <p className="text-xl text-gray-700 font-bold">Processing...</p>
