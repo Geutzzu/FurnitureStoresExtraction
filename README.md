@@ -220,8 +220,21 @@ that were small enough to be uploaded to GitHub).
      ``` 
 - After this, you will have to create a directory called `Models` (if it does not exist) in the `FurnitureFinder` directory
   (where the django app is located).
+
+
 - You can then download one of my trained models from the Google Drive link below, and add it to the `Models` directory:
+
   - [ROB_0.89F1_16B_100000DAT](https://drive.google.com/drive/folders/1kuXdzfuZpfyJGMZYohPATBuOGeN6lxTz?usp=sharing)
+
+
+- **NOTE ABOUT OTHER MODELS**: I am still experimenting with other models and I will update this README
+with better-performing models as I train them. Since
+testing is very misleading and time-consuming, coming up with a better
+model may not be feasible for me at the moment. Important is that all the "tools" for creating
+a model are there, and anyone can come in and train a better model using the same pipeline I did if 
+they have the knowledge and resources to do so.
+
+
 - For the model above, the app will work plug-and-play. If you want to use a different model, you will have to
 change the model path in the `inference.py` file in the `Scripts` directory inside the django app.
     ```py
