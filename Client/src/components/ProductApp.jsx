@@ -131,7 +131,13 @@ const ProductApp = () => {
           {/* placeholder for results table */}
           {results.length === 0 && !isLoading && (
               <div className="flex items-center justify-center h-96">
-              <p className="text-xl text-gray-700 font-bold ">Start searching for furniture in order to see results.</p>
+                {inferenceStatus !== 'Not started.' &&
+                <p className="text-xl text-gray-700 font-bold ">No results found for your given link, please try again !</p>
+                }
+                {/* placeholder for results table if nothing is found */}
+                {inferenceStatus === 'Not started.' &&
+                <p className="text-xl text-gray-700 font-bold ">Start searching for furniture in order to see results.</p>
+                }
               </div>
           )}
 
