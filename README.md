@@ -1,4 +1,4 @@
-# Furniture Store Extraction Application
+# Furniture Stores Extraction Application
 
 A tool for extracting, displaying, and exporting furniture
 product data from any website, built using Django and React. It’s powered 
